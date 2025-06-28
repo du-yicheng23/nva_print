@@ -31,7 +31,7 @@
 NVA_INLINE int nva_strlen(const char* str) /* NOLINT */
 {
 #if (NVA_USE_STD_STRING)
-    return strlen(str);
+    return (int)strlen(str);
 #else
     int len;
 
@@ -53,14 +53,16 @@ NVA_INLINE char* nva_strcat(char* dest, const char* src) /* NOLINT */
 #if (NVA_USE_STD_STRING)
     return strcat(dest, src);
 #else
-    int dest_index, src_index;
+    unsigned int dest_index, src_index;
 
-    for (dest_index = 0; dest[dest_index] != '\0'; ++dest_index) {
+    for (dest_index = 0U; dest[dest_index] != '\0'; ++dest_index) {
     }
 
-    for (src_index = 0; src[src_index] != '\0'; ++dest_index, ++src_index) {
+    for (src_index = 0U; src[src_index] != '\0'; ++dest_index, ++src_index) {
         dest[dest_index] = src[src_index];
     }
+
+    dest[dest_index] = '\0'; /* 确保字符串以 '\0' 结尾 */
 
     return dest;
 #endif
@@ -77,11 +79,13 @@ NVA_INLINE char* nva_strcpy(char* dest, const char* src) /* NOLINT */
 #if (NVA_USE_STD_STRING)
     return strcpy(dest, src);
 #else
-    int i;
+    unsigned int i;
 
-    for (i = 0; src[i] != '\0'; ++i) {
+    for (i = 0U; src[i] != '\0'; ++i) {
         dest[i] = src[i];
     }
+
+    dest[i] = '\0'; /* 确保字符串以 '\0' 结尾 */
 
     return dest;
 #endif
