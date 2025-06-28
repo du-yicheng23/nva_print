@@ -9,6 +9,10 @@
 #ifndef NVA_DEFINES_H
 #define NVA_DEFINES_H
 
+#ifdef NVA_ADD_USER_OPTIONS
+#include "nva_user_options.h"
+#endif
+
 #ifdef __cplusplus
 #define NVA_EXTERN_C       extern "C"
 #define NVA_EXTERN_C_BEGIN extern "C" {
@@ -26,7 +30,7 @@
 typedef size_t NVA_SIZE_T;
 #define NVA_NULL NULL
 
-#else  // !NVA_NO_STDDEF_H
+#else /* !NVA_NO_STDDEF_H */
 
 #ifndef NVA_SIZE_T
 #define NVA_SIZE_T unsigned int
@@ -39,9 +43,9 @@ typedef size_t NVA_SIZE_T;
 #define NVA_NULL ((void*)0)
 #endif
 
-#endif  // !NVA_NO_STDDEF_H
+#endif /* !NVA_NO_STDDEF_H */
 
-#if (!defined(NVA_NO_STDBOOL_H) || !defined(__cplusplus)
+#if (!defined(NVA_NO_STDBOOL_H) || defined(__cplusplus))
 
 #ifndef __cplusplus
 #include <stdbool.h>
@@ -51,13 +55,13 @@ typedef size_t NVA_SIZE_T;
 #define NVA_TRUE  true
 #define NVA_FALSE false
 
-#else  // (!defined(NVA_NO_STDBOOL_H) || !defined(__cplusplus)
+#else /* (!defined(NVA_NO_STDBOOL_H) || !defined(__cplusplus) */
 
 #define NVA_BOOL  (unsigned char)
-#define NVA_TRUE  ((NVA_BOOL)1)
-#define NVA_FALSE ((NVA_BOOL)0)
+#define NVA_FALSE (0)
+#define NVA_TRUE  (!NVA_FALSE)
 
-#endif  // (!defined(NVA_NO_STDBOOL_H) || !defined(__cplusplus)
+#endif /* (!defined(NVA_NO_STDBOOL_H) || !defined(__cplusplus) */
 
 #ifdef NVA_USE_INLINE
 
@@ -67,7 +71,7 @@ typedef size_t NVA_SIZE_T;
 
 #define NVA_INLINE_MODE   NVA_TRUE
 
-#else  // NVA_USE_INLINE
+#else /* NVA_USE_INLINE */
 
 #define NVA_INLINE
 #define NVA_STATIC_INLINE
@@ -75,7 +79,7 @@ typedef size_t NVA_SIZE_T;
 
 #define NVA_INLINE_MODE NVA_FALSE
 
-#endif  // NVA_USE_INLINE
+#endif /* NVA_USE_INLINE */
 
 #if (defined(NVA_USE_INLINE) && defined(NVA_USE_CONSTEXPR))
 #define NVA_CONSTEXPR constexpr
@@ -83,4 +87,4 @@ typedef size_t NVA_SIZE_T;
 #define NVA_CONSTEXPR
 #endif
 
-#endif  // !NVA_DEFINES_H
+#endif /* !NVA_DEFINES_H */

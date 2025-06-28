@@ -16,7 +16,7 @@ NVA_EXTERN_C_BEGIN
 NVA_EXTERN_INLINE int nva_strlen(const char* str);
 NVA_EXTERN_INLINE char* nva_strcat(char* dest, const char* src);
 NVA_EXTERN_INLINE char* nva_strcpy(char* dest, const char* src);
-NVA_EXTERN_INLINE int nva_strcmp(const char* str1, const char* str2);
+NVA_EXTERN_INLINE int nva_strcmp(const char* lhs, const char* rhs);
 
 NVA_EXTERN_C_END
 
