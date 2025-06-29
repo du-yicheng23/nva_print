@@ -13,10 +13,12 @@
 
 NVA_EXTERN_C_BEGIN
 
-NVA_EXTERN_INLINE int nva_strlen(const char* str);
-NVA_EXTERN_INLINE char* nva_strcat(char* dest, const char* src);
-NVA_EXTERN_INLINE char* nva_strcpy(char* dest, const char* src);
+NVA_EXTERN_INLINE NVA_SIZE_T nva_strlen(const char* str);
+NVA_EXTERN_INLINE char* nva_strcat(char* NVA_RESTRICT dest, const char* NVA_RESTRICT src);
+NVA_EXTERN_INLINE char* nva_strcpy(char* NVA_RESTRICT dest, const char* NVA_RESTRICT src);
 NVA_EXTERN_INLINE int nva_strcmp(const char* lhs, const char* rhs);
+
+NVA_EXTERN_INLINE void* nva_memcpy(void* NVA_RESTRICT dest, const void* NVA_RESTRICT src, NVA_SIZE_T n);
 
 NVA_EXTERN_C_END
 

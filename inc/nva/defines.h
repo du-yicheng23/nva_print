@@ -63,6 +63,20 @@ typedef size_t NVA_SIZE_T;
 
 #endif /* (!defined(NVA_NO_STDBOOL_H) || !defined(__cplusplus) */
 
+/* clang-format off */
+
+#ifndef NVA_NO_RESTRICT
+    #ifdef __cplusplus
+        #define NVA_RESTRICT
+    #else
+        #define NVA_RESTRICT restrict
+    #endif
+#else
+    #define NVA_RESTRICT
+#endif
+
+/* clang-format on */
+
 #ifdef NVA_USE_INLINE
 
 #define NVA_INLINE        inline
