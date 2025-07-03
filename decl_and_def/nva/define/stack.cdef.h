@@ -10,6 +10,7 @@
 #define NVA_STACK_CDEF_H
 
 #include "nva/defines.h"
+#include "nva/declare/stack.cdecl.h"
 #include "nva/string.h"
 
 NVA_EXTERN_C_BEGIN
@@ -26,7 +27,7 @@ NVA_EXTERN_C_BEGIN
  * @param stack 待初始化的栈的地址
  * @return nva_StatusCode
  */
-NVA_INLINE NVA_CONSTEXPR nva_StatusCode nva_stackInit(nva_Stack* stack) /* NOLINT */
+NVA_STATIC_INLINE NVA_CONSTEXPR nva_StatusCode nva_stackInit(nva_Stack* stack) /* NOLINT */
 {
     if (stack == NVA_NULL) {
         return NVA_PARAM_ERROR;
@@ -45,7 +46,7 @@ NVA_INLINE NVA_CONSTEXPR nva_StatusCode nva_stackInit(nva_Stack* stack) /* NOLIN
  * @param type_id 推送的值的类型ID
  * @return nva_StatusCode
  */
-NVA_INLINE nva_StatusCode nva_stackPush(nva_Stack* stack, const void* value, const nva_TypeId type_id) /* NOLINT */
+NVA_STATIC_INLINE nva_StatusCode nva_stackPush(nva_Stack* stack, const void* value, const nva_TypeId type_id) /* NOLINT */
 {
     if (NVA_STACK_DEPTH(stack) <= stack->data_top + NVA_TYPE_SIZE(type_id)) {
         return NVA_FULL;
@@ -67,7 +68,7 @@ NVA_INLINE nva_StatusCode nva_stackPush(nva_Stack* stack, const void* value, con
  * @param[out] type_id 弹出的值的类型ID
  * @return nva_StatusCode
  */
-NVA_INLINE nva_StatusCode nva_stackPop(nva_Stack* stack, void* value, nva_TypeId* type_id) /* NOLINT */
+NVA_STATIC_INLINE nva_StatusCode nva_stackPop(nva_Stack* stack, void* value, nva_TypeId* type_id) /* NOLINT */
 {
     const nva_TypeId top_type_id = stack->type[stack->type_top - 1];
 

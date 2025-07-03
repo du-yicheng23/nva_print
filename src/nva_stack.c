@@ -6,13 +6,8 @@
  */
 
 #include "nva/defines.h"
-#include "nva/stack.h"
 
-#if (NVA_INLINE_MODE)
-
-#include "nva/declare/stack.cdecl.h"
-
-#else
+#if (!NVA_INLINE_MODE)
 
 #include "nva/define/stack.cdef.h"
 

@@ -11,13 +11,11 @@
 
 #include "nva/defines.h"
 
+#include "nva/declare/stack.cdecl.h"
+
 #if (NVA_INLINE_MODE)
 
 #include "nva/define/stack.cdef.h"
-
-#else
-
-#include "nva/declare/stack.cdecl.h"
 
 #endif
 

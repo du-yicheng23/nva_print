@@ -92,9 +92,11 @@ typedef struct nva_Stack {
  */
 #define NVA_STACK_INIT_VALUE {0}
 
-NVA_EXTERN_INLINE NVA_CONSTEXPR nva_StatusCode nva_stackInit(nva_Stack* stack);
-NVA_EXTERN_INLINE nva_StatusCode nva_stackPush(nva_Stack* stack, const void* value, nva_TypeId type_id);
-NVA_EXTERN_INLINE nva_StatusCode nva_stackPop(nva_Stack* stack, void* value, nva_TypeId* type_id);
+#if (!NVA_INLINE_MODE)
+nva_StatusCode nva_stackInit(nva_Stack* stack);
+nva_StatusCode nva_stackPush(nva_Stack* stack, const void* value, nva_TypeId type_id);
+nva_StatusCode nva_stackPop(nva_Stack* stack, void* value, nva_TypeId* type_id);
+#endif /* (!NVA_INLINE_MODE) */
 
 NVA_EXTERN_C_END
 
