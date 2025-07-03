@@ -20,6 +20,9 @@ NVA_EXTERN_INLINE int nva_strcmp(const char* lhs, const char* rhs);
 
 NVA_EXTERN_INLINE void* nva_memcpy(void* NVA_RESTRICT dest, const void* NVA_RESTRICT src, NVA_SIZE_T n);
 
+NVA_EXTERN_INLINE char* nva_itoa(int value, char* NVA_RESTRICT str, unsigned char base, NVA_BOOL upper_case);
+NVA_EXTERN_INLINE char* nva_uitoa(unsigned int uvalue, char* NVA_RESTRICT str, unsigned char base, NVA_BOOL upper_case);
+
 NVA_EXTERN_C_END
 
 #endif  // !NVA_STRING_CDECL_H

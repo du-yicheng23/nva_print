@@ -170,6 +170,88 @@ NVA_INLINE void* nva_memcpy(void* NVA_RESTRICT dest, const void* NVA_RESTRICT sr
 #endif
 }
 
+NVA_INLINE char* nva_itoa(const int value, /* NOLINT */
+                          char* NVA_RESTRICT str,
+                          const unsigned char base,
+                          const NVA_BOOL upper_case)
+{
+    const char index[] = "0123456789abcdef";       /* 索引表 */
+    const char upper_index[] = "0123456789ABCDEF"; /* 大写索引表 */
+    unsigned int uvalue;
+    signed char i = 0, j, k;
+    char temp; /* 临时变量，用于最后一步逆序 */
+
+    /* 获取要转换的整数的绝对值 */
+    if (value < 0) {
+        uvalue = (unsigned int)(-value);
+        str[i++] = '-';
+    }
+    else {
+        uvalue = (unsigned int)value;
+    }
+
+    /* 转换部分，注意转换后是逆序的 */
+    do {
+        str[i++] = (upper_case ? upper_index[uvalue % base] : index[uvalue % base]);
+        uvalue /= base;
+    } while (uvalue != 0U);
+
+    str[i] = '\0';
+
+    /* 将顺序调整过来 */
+    if (str[0] == '-') {
+        k = 1; /* 如果是负数，符号不用调整，从符号后面开始调整 */
+    }
+    else {
+        k = 0; /* 否则全部都要调整 */
+    }
+
+    /* 头尾一一对称交换，i其实就是字符串的长度，索引最大值比长度少1 */
+    for (j = k; j <= (i - 1) / 2; j++) {
+        temp = str[j];
+        str[j] = str[i - 1 + k - j];
+        str[i - 1 + k - j] = temp;
+    }
+
+    return str;
+}
+
+NVA_INLINE char* nva_uitoa(unsigned int uvalue, /* NOLINT */
+                           char* NVA_RESTRICT str,
+                           const unsigned char base,
+                           const NVA_BOOL upper_case)
+{
+    const char index[] = "0123456789abcdef";       /* 索引表 */
+    const char upper_index[] = "0123456789ABCDEF"; /* 大写索引表 */
+    signed char i = 0, j, k;
+    char temp;                                     /* 临时变量，用于最后一步逆序 */
+
+    /* 转换部分，注意转换后是逆序的 */
+    do {
+        str[i++] = (upper_case ? upper_index[uvalue % base] : index[uvalue % base]);
+        uvalue /= base;
+    } while (uvalue != 0U);
+
+    str[i] = '\0';
+
+    /* 将顺序调整过来 */
+    if (str[0] == '-') {
+        k = 1; /* 如果是负数，符号不用调整，从符号后面开始调整 */
+    }
+    else {
+        k = 0; /* 否则全部都要调整 */
+    }
+
+    /* 头尾一一对称交换，i其实就是字符串的长度，索引最大值比长度少1 */
+    for (j = k; j <= (i - 1) / 2; j++) {
+        temp = str[j];
+        str[j] = str[i - 1 + k - j];
+        str[i - 1 + k - j] = temp;
+    }
+
+    return str;
+}
+
 NVA_EXTERN_C_END
 
 #endif /* !NVA_STRING_CDEF_H */
