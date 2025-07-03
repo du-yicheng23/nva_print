@@ -57,7 +57,7 @@ typedef size_t NVA_SIZE_T;
 
 #else /* (!defined(NVA_NO_STDBOOL_H) || !defined(__cplusplus) */
 
-#define NVA_BOOL  (unsigned char)
+#define NVA_BOOL  unsigned char
 #define NVA_FALSE (0)
 #define NVA_TRUE  (!NVA_FALSE)
 
@@ -129,5 +129,12 @@ typedef signed char nva_StatusCode; /**< 状态码类型 */
  * @return 数组的元素个数
  */
 #define NVA_COUNTOF(array) (sizeof(array) / sizeof(array[0]))
+
+/**
+ * 获得整数类型的位数
+ * @tparam int_type 整数类型
+ * @return 位数
+ */
+#define NVA_INT_BITS(int_type) (sizeof(int_type) * 8U)
 
 #endif /* !NVA_DEFINES_H */
