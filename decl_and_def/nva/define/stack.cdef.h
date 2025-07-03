@@ -10,7 +10,6 @@
 #define NVA_STACK_CDEF_H
 
 #include "nva/defines.h"
-#include "nva/declare/stack.cdecl.h"
 #include "nva/string.h"
 
 NVA_EXTERN_C_BEGIN

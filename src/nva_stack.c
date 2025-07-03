@@ -10,9 +10,7 @@
 
 #if (NVA_INLINE_MODE)
 
-NVA_EXTERN_C_BEGIN
-#include "nva/extern_inl_func/stack.extinl.h"
-NVA_EXTERN_C_END
+#include "nva/declare/stack.cdecl.h"
 
 #else
 
