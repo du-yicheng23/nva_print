@@ -79,11 +79,11 @@ typedef unsigned char nva_TypeId; /**< 类型ID类型 */
  * 栈结构体
  */
 typedef struct nva_Stack {
-    NVA_SIZE_T type_top;                        /**< 类型栈顶元素的索引 */
-    NVA_SIZE_T data_top;                        /**< 数据栈顶元素的索引 */
+    NVA_SIZE_T type_top;                              /**< 类型栈顶元素的索引 */
+    NVA_SIZE_T data_top;                              /**< 数据栈顶元素的索引 */
 
-    nva_TypeId type[NVA_STACK_DEFAULT_SIZE];    /**< 栈的类型存储 */
-    unsigned char data[NVA_STACK_DEFAULT_SIZE]; /**< 栈的数据存储 */
+    nva_TypeId type[NVA_STACK_DEFAULT_SIZE];          /**< 栈的类型存储 */
+    unsigned char data_store[NVA_STACK_DEFAULT_SIZE]; /**< 栈的数据存储 */
 } nva_Stack;
 
 /**

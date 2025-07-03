@@ -63,6 +63,14 @@ typedef size_t NVA_SIZE_T;
 
 #endif /* (!defined(NVA_NO_STDBOOL_H) || !defined(__cplusplus) */
 
+#ifdef NVA_NO_LONG_LONG_TYPE
+#define NVA_LONG_LONG     long
+#define NVA_LLONG_ENABLED NVA_FALSE
+#else /* NVA_NO_LONG_LONG_TYPE */
+#define NVA_LONG_LONG     long long
+#define NVA_LLONG_ENABLED NVA_TRUE
+#endif /* NVA_NO_LONG_LONG_TYPE */
+
 /* clang-format off */
 
 #ifndef NVA_NO_RESTRICT

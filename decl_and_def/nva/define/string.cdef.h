@@ -130,13 +130,14 @@ NVA_INLINE void* nva_memcpy(void* NVA_RESTRICT dest, const void* NVA_RESTRICT sr
 #else
     NVA_SIZE_T i;
 
-    if (n % sizeof(unsigned long long) == 0) {
-        n /= sizeof(unsigned long long);
+    if (n % sizeof(unsigned NVA_LONG_LONG) == 0) {
+        n /= sizeof(unsigned NVA_LONG_LONG);
 
         for (i = 0U; i < n; ++i) {
-            ((unsigned long long*)dest)[i] = ((const unsigned long long*)src)[i];
+            ((unsigned NVA_LONG_LONG*)dest)[i] = ((const unsigned NVA_LONG_LONG*)src)[i];
         }
     }
+#if (NVA_LLONG_ENABLED)
     else if (n % sizeof(unsigned long) == 0) {
         n /= sizeof(unsigned long);
 
@@ -144,6 +145,7 @@ NVA_INLINE void* nva_memcpy(void* NVA_RESTRICT dest, const void* NVA_RESTRICT sr
             ((unsigned long*)dest)[i] = ((const unsigned long*)src)[i];
         }
     }
+#endif /* (NVA_LLONG_ENABLED) */
     else if (n % sizeof(unsigned int) == 0) {
         n /= sizeof(unsigned int);
 
