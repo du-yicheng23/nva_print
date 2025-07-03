@@ -23,6 +23,18 @@
 
 #endif /* !NVA_NO_STRING_H */
 
+#ifdef NVA_HAVE_GCVT_FUNC
+
+#include <stdlib.h>
+
+#define NVA_USE_GCVT_FUNC NVA_TRUE
+
+#else /* NVA_NO_STDLIB_H */
+
+#define NVA_USE_GCVT_FUNC NVA_FALSE
+
+#endif /* NVA_HAVE_GCVT_FUNC */
+
 NVA_EXTERN_C_BEGIN
 
 /**
@@ -226,7 +238,7 @@ NVA_INLINE char* nva_uitoa(unsigned int uvalue, /* NOLINT */
     signed char i = 0, j, k;
     char temp;                                     /* 临时变量，用于最后一步逆序 */
 
-    /* 转换部分，注意转换后是逆序的 */
+    /* 转换为字符串，注意转换后是逆序的 */
     do {
         str[i++] = (upper_case ? upper_index[uvalue % base] : index[uvalue % base]);
         uvalue /= base;
@@ -250,6 +262,133 @@ NVA_INLINE char* nva_uitoa(unsigned int uvalue, /* NOLINT */
     }
 
     return str;
+}
+
+NVA_INLINE char* nva_gcvt(double value, const unsigned char precision, char* NVA_RESTRICT str)
+{
+#if (NVA_USE_GCVT_FUNC)
+    return gcvt(value, precision, str);
+#else
+    NVA_SIZE_T integer;
+    NVA_SIZE_T decimal;
+    unsigned char i = 0U, j, k;
+    char roundoff_value;
+    NVA_BOOL is_decimal_zero = NVA_FALSE;
+
+    if (value < 0.0) {
+        str[i++] = '-';
+        value = -value;
+    }
+
+    integer = (NVA_SIZE_T)value;
+
+    value -= integer;
+
+    /* 要多乘以一次10，因为要根据保留的下一位决定是舍入 */
+    for (j = 0U; j <= precision; ++j) {
+        value *= 10.0;
+    }
+
+    decimal = (NVA_SIZE_T)value; /* 取小数部分 */
+
+    /* 取出用于判断是否舍入的数字 */
+    roundoff_value = decimal % 10U;
+    decimal /= 10U;
+
+    if (precision != 0) {
+        /* 转换为字符串，注意转换后是逆序的 */
+        do {
+            str[i++] = decimal % 10U + '0';
+            decimal /= 10U;
+        } while (decimal != 0U);
+
+        if (str[0] != '-') {
+            for (; i < precision; ++i) {
+                str[i] = '0';
+            }
+        }
+        else {
+            for (; i - 1 < precision; ++i) {
+                str[i] = '0';
+            }
+        }
+
+        str[i++] = '.';
+
+        /* 舍入 */
+        if (str[0] == '-') {
+            if (roundoff_value > 5) {
+                str[1] += 1;
+            }
+            else if (roundoff_value == 5) {
+                if ((str[1] - '0') % 2U != 0U) {
+                    str[1] += 1;
+                }
+            }
+        }
+        else {
+            if (roundoff_value > 5) {
+                str[0] += 1;
+            }
+            else if (roundoff_value == 5) {
+                if ((str[0] - '0') % 2U != 0U) {
+                    str[0] += 1;
+                }
+            }
+        }
+    }
+    else {
+        is_decimal_zero = NVA_TRUE;
+    }
+
+    do {
+        str[i++] = integer % 10U + '0';
+        integer /= 10U;
+    } while (integer != 0U);
+
+    if (is_decimal_zero) {
+        /* 舍入 */
+        if (str[0] == '-') {
+            if (roundoff_value > 5) {
+                str[1] += 1;
+            }
+            else if (roundoff_value == 5) {
+                if ((str[1] - '0') % 2U != 0U) {
+                    str[1] += 1;
+                }
+            }
+        }
+        else {
+            if (roundoff_value > 5) {
+                str[0] += 1;
+            }
+            else if (roundoff_value == 5) {
+                if ((str[0] - '0') % 2U != 0U) {
+                    str[0] += 1;
+                }
+            }
+        }
+    }
+
+    str[i] = '\0';
+
+    /* 将顺序调整过来 */
+    if (str[0] == '-') {
+        k = 1; /* 如果是负数，符号不用调整，从符号后面开始调整 */
+    }
+    else {
+        k = 0; /* 否则全部都要调整 */
+    }
+
+    /* 头尾一一对称交换，i其实就是字符串的长度，索引最大值比长度少1 */
+    for (j = k; j <= (i - 1) / 2; j++) {
+        roundoff_value = str[j]; /* 由于 roundoff 不再需要使用，因此把它当作临时变量 */
+        str[j] = str[i - 1 + k - j];
+        str[i - 1 + k - j] = roundoff_value;
+    }
+
+    return str;
+#endif
 }
 
 NVA_EXTERN_C_END
