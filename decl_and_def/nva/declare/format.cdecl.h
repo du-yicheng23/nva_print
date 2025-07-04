@@ -20,6 +20,17 @@ typedef struct nva_DefaultFmtStatus {
 #define NVA_START ((nva_DefaultFmtStatus){-1})
 #define NVA_ERROR ((nva_DefaultFmtStatus){-2})
 
+typedef struct nva_FormatStyle {
+    signed char arg_id;
+
+    char filler;
+
+    signed char width;
+    signed char precision;
+
+    unsigned char flag;
+} nva_FormatStyle;
+
 nva_DefaultFmtStatus nva_int_default(int value, nva_DefaultFmtStatus status);
 nva_DefaultFmtStatus nva_uint_default(unsigned int uvalue, nva_DefaultFmtStatus status);
 nva_DefaultFmtStatus nva_char_default(char ch, nva_DefaultFmtStatus status);
