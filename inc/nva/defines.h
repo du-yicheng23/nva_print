@@ -89,7 +89,6 @@ typedef size_t NVA_SIZE_T;
 
 #define NVA_INLINE        inline
 #define NVA_STATIC_INLINE static inline
-#define NVA_EXTERN_INLINE extern inline
 
 #define NVA_INLINE_MODE   NVA_TRUE
 
@@ -97,7 +96,6 @@ typedef size_t NVA_SIZE_T;
 
 #define NVA_INLINE
 #define NVA_STATIC_INLINE
-#define NVA_EXTERN_INLINE
 
 #define NVA_INLINE_MODE NVA_FALSE
 

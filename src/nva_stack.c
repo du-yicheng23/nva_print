@@ -9,8 +9,6 @@
 
 #if (!NVA_INLINE_MODE)
 
-#include "nva/declare/stack.cdecl.h"
-
 #include "nva/define/stack.cdef.h"
 
 #endif

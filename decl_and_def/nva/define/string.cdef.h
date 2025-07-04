@@ -10,6 +10,7 @@
 #define NVA_STRING_CDEF_H
 
 #include "nva/defines.h"
+#include "nva/declare/string.cdecl.h"
 
 #ifndef NVA_NO_STRING_H
 
@@ -42,7 +43,7 @@ NVA_EXTERN_C_BEGIN
  * @param str 字符串
  * @return 长度
  */
-NVA_INLINE NVA_SIZE_T nva_strlen(const char* str) /* NOLINT */
+NVA_STATIC_INLINE NVA_SIZE_T nva_strlen(const char* str) /* NOLINT */
 {
 #if (NVA_USE_STD_STRING)
     return strlen(str);
@@ -62,7 +63,7 @@ NVA_INLINE NVA_SIZE_T nva_strlen(const char* str) /* NOLINT */
  * @param src 被拼接的字符串
  * @return 拼接完成后的 dest
  */
-NVA_INLINE char* nva_strcat(char* NVA_RESTRICT dest, const char* NVA_RESTRICT src) /* NOLINT */
+NVA_STATIC_INLINE char* nva_strcat(char* NVA_RESTRICT dest, const char* NVA_RESTRICT src) /* NOLINT */
 {
 #if (NVA_USE_STD_STRING)
     return strcat(dest, src);
@@ -88,7 +89,7 @@ NVA_INLINE char* nva_strcat(char* NVA_RESTRICT dest, const char* NVA_RESTRICT sr
  * @param src 被复制的字符串
  * @return 复制完成后的 dest
  */
-NVA_INLINE char* nva_strcpy(char* NVA_RESTRICT dest, const char* NVA_RESTRICT src) /* NOLINT */
+NVA_STATIC_INLINE char* nva_strcpy(char* NVA_RESTRICT dest, const char* NVA_RESTRICT src) /* NOLINT */
 {
 #if (NVA_USE_STD_STRING)
     return strcpy(dest, src);
@@ -111,7 +112,7 @@ NVA_INLINE char* nva_strcpy(char* NVA_RESTRICT dest, const char* NVA_RESTRICT sr
  * @param rhs 比较运算右侧的字符串
  * @return 如果 lhs < rhs 返回负数，如果 lhs > rhs 返回正数，如果相等返回 0
  */
-NVA_INLINE int nva_strcmp(const char* lhs, const char* rhs) /* NOLINT */
+NVA_STATIC_INLINE int nva_strcmp(const char* lhs, const char* rhs) /* NOLINT */
 {
 #if (NVA_USE_STD_STRING)
     return strcmp(lhs, rhs);
@@ -135,7 +136,7 @@ NVA_INLINE int nva_strcmp(const char* lhs, const char* rhs) /* NOLINT */
  * @param n 要拷贝的字节数
  * @return 拷贝后的 dest
  */
-NVA_INLINE void* nva_memcpy(void* NVA_RESTRICT dest, const void* NVA_RESTRICT src, NVA_SIZE_T n) /* NOLINT */
+NVA_STATIC_INLINE void* nva_memcpy(void* NVA_RESTRICT dest, const void* NVA_RESTRICT src, NVA_SIZE_T n) /* NOLINT */
 {
 #if (NVA_USE_STD_STRING)
     return memcpy(dest, src, n);
@@ -182,10 +183,10 @@ NVA_INLINE void* nva_memcpy(void* NVA_RESTRICT dest, const void* NVA_RESTRICT sr
 #endif
 }
 
-NVA_INLINE char* nva_itoa(const int value, /* NOLINT */
-                          char* NVA_RESTRICT str,
-                          const unsigned char base,
-                          const NVA_BOOL upper_case)
+NVA_STATIC_INLINE char* nva_itoa(const int value, /* NOLINT */
+                                 char* NVA_RESTRICT str,
+                                 const unsigned char base,
+                                 const NVA_BOOL upper_case)
 {
     const char index[] = "0123456789abcdef";       /* 索引表 */
     const char upper_index[] = "0123456789ABCDEF"; /* 大写索引表 */
@@ -228,10 +229,10 @@ NVA_INLINE char* nva_itoa(const int value, /* NOLINT */
     return str;
 }
 
-NVA_INLINE char* nva_uitoa(unsigned int uvalue, /* NOLINT */
-                           char* NVA_RESTRICT str,
-                           const unsigned char base,
-                           const NVA_BOOL upper_case)
+NVA_STATIC_INLINE char* nva_uitoa(unsigned int uvalue, /* NOLINT */
+                                  char* NVA_RESTRICT str,
+                                  const unsigned char base,
+                                  const NVA_BOOL upper_case)
 {
     const char index[] = "0123456789abcdef";       /* 索引表 */
     const char upper_index[] = "0123456789ABCDEF"; /* 大写索引表 */
@@ -264,7 +265,7 @@ NVA_INLINE char* nva_uitoa(unsigned int uvalue, /* NOLINT */
     return str;
 }
 
-NVA_INLINE char* nva_gcvt(double value, const unsigned char precision, char* NVA_RESTRICT str)
+NVA_STATIC_INLINE char* nva_gcvt(double value, const unsigned char precision, char* NVA_RESTRICT str)
 {
 #if (NVA_USE_GCVT_FUNC)
     return gcvt(value, precision, str);

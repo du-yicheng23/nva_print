@@ -6,13 +6,8 @@
  */
 
 #include "nva/defines.h"
-#include "nva/string.h"
 
-#if (NVA_INLINE_MODE)
-
-#include "nva/declare/string.cdecl.h"
-
-#else
+#if (!NVA_INLINE_MODE)
 
 #include "nva/define/string.cdef.h"
 
