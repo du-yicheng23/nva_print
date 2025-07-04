@@ -86,6 +86,20 @@ nva_DefaultFmtStatus nva_str_default(const char* const str, const nva_DefaultFmt
 #endif
 }
 
+nva_ErrorCode nva_format_default(char* NVA_RESTRICT dest, const char* NVA_RESTRICT format, const nva_DefaultFmtStatus status)
+{
+#if (NVA_DEFAULT_FMT_BUFFER_SIZE == 0)
+    return NVA_FAIL;
+#else
+    if (status.status != NVA_START.status) {
+        return NVA_FAIL;
+    }
+    if (dest == NVA_NULL || format == NVA_NULL) {
+        return NVA_PARAM_ERROR;
+    }
+#endif
+}
+
 NVA_EXTERN_C_END
 
 #endif /* !NVA_FORMAT_CDEF_H */

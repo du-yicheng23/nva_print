@@ -118,7 +118,8 @@ enum nva_ErrorCode_ {
     NVA_SUCCESS = 0,               /**< 成功 */
     NVA_PARAM_ERROR = -1,          /**< 参数错误 */
     NVA_FULL = -2,                 /**< 数据已满 */
-    NVA_EMPTY = -3                 /**< 数据为空 */
+    NVA_EMPTY = -3,                /**< 数据为空 */
+    NVA_FAIL = -4                  /**< 失败 */
 };
 typedef signed char nva_ErrorCode; /**< 状态码类型 */
 

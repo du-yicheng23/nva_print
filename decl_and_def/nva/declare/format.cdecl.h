@@ -25,6 +25,25 @@ nva_DefaultFmtStatus nva_uint_default(unsigned int uvalue, nva_DefaultFmtStatus 
 nva_DefaultFmtStatus nva_char_default(char ch, nva_DefaultFmtStatus status);
 nva_DefaultFmtStatus nva_str_default(const char* str, nva_DefaultFmtStatus status);
 
+#if (__STDC_VERSION__ > 201100L)
+
+#define nva_add(value, obj)                                                                    \
+    _Generic((value),                                                                          \
+        int: _Generic((obj), nva_DefaultFmtStatus: nva_int_default((value), (obj))),           \
+        unsigned int: _Generic((obj), nva_DefaultFmtStatus: nva_uint_default((value), (obj))), \
+        char: _Generic((obj), nva_DefaultFmtStatus: nva_char_default((value), (obj))),         \
+        const char*: _Generic((obj), nva_DefaultFmtStatus: nva_str_default((value), (obj))))
+
+#endif /* (__STDC_VERSION__ > 201100L) */
+
+nva_ErrorCode nva_format_default(char* NVA_RESTRICT dest, const char* NVA_RESTRICT format, nva_DefaultFmtStatus status);
+
+#if (__STDC_VERSION__ > 201100L)
+
+#define nva_format(dest, format, obj) _Generic((obj), nva_DefaultFmtStatus: nva_format_default((dest), (format), (obj)))
+
+#endif /* (__STDC_VERSION__ > 201100L) */
+
 NVA_EXTERN_C_END
 
 #endif /* !NVA_FORMAT_CDECL_H */
