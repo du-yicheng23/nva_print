@@ -97,7 +97,7 @@ typedef struct nva_Stack {
 nva_ErrorCode nva_stackInit(nva_Stack* NVA_RESTRICT stack);
 nva_ErrorCode nva_stackPush(nva_Stack* NVA_RESTRICT stack, const void* NVA_RESTRICT value, nva_TypeId type_id);
 nva_ErrorCode nva_stackPeek(const nva_Stack* NVA_RESTRICT stack,
-                            NVA_SIZE_T i,
+                            unsigned int i,
                             void* NVA_RESTRICT value,
                             nva_TypeId* NVA_RESTRICT type_id);
 nva_ErrorCode nva_stackPop(nva_Stack* NVA_RESTRICT stack, void* NVA_RESTRICT value, nva_TypeId* NVA_RESTRICT type_id);

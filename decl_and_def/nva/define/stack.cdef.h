@@ -73,7 +73,7 @@ NVA_STATIC_INLINE nva_ErrorCode nva_stackPush(nva_Stack* NVA_RESTRICT stack, /* 
  * @return nva_ErrorCode
  */
 NVA_STATIC_INLINE nva_ErrorCode nva_stackPeek(const nva_Stack* NVA_RESTRICT stack, /* NOLINT */
-                                              const NVA_SIZE_T i,
+                                              const unsigned int i,
                                               void* NVA_RESTRICT value,
                                               nva_TypeId* NVA_RESTRICT type_id)
 {
