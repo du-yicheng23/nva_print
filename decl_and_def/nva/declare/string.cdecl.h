@@ -13,6 +13,9 @@
 
 NVA_EXTERN_C_BEGIN
 
+extern const char nva_itoa_str_table[17];
+extern const char nva_itoa_str_table_upper[17];
+
 #if (!NVA_INLINE_MODE)
 
 NVA_SIZE_T nva_strlen(const char* str);

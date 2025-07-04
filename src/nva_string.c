@@ -12,3 +12,6 @@
 #include "nva/define/string.cdef.h"
 
 #endif
+
+const char nva_itoa_str_table[17] = "0123456789abcdef";       /**< 数字转字符的索引表 */
+const char nva_itoa_str_table_upper[17] = "0123456789ABCDEF"; /**< 数字转字符的大写索引表 */

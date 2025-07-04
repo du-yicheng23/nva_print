@@ -183,13 +183,19 @@ NVA_STATIC_INLINE void* nva_memcpy(void* NVA_RESTRICT dest, const void* NVA_REST
 #endif
 }
 
+/**
+ * 整型转字符串
+ * @param value 整型数值
+ * @param str 字符串
+ * @param base 基数，取值为 2~16
+ * @param upper_case 是否为大写字母
+ * @return str
+ */
 NVA_STATIC_INLINE char* nva_itoa(const int value, /* NOLINT */
                                  char* NVA_RESTRICT str,
                                  const unsigned char base,
                                  const NVA_BOOL upper_case)
 {
-    const char index[] = "0123456789abcdef";       /* 索引表 */
-    const char upper_index[] = "0123456789ABCDEF"; /* 大写索引表 */
     unsigned int uvalue;
     signed char i = 0, j, k;
     char temp; /* 临时变量，用于最后一步逆序 */
@@ -205,7 +211,7 @@ NVA_STATIC_INLINE char* nva_itoa(const int value, /* NOLINT */
 
     /* 转换部分，注意转换后是逆序的 */
     do {
-        str[i++] = (upper_case ? upper_index[uvalue % base] : index[uvalue % base]);
+        str[i++] = (upper_case ? nva_itoa_str_table_upper[uvalue % base] : nva_itoa_str_table[uvalue % base]);
         uvalue /= base;
     } while (uvalue != 0U);
 
@@ -229,19 +235,25 @@ NVA_STATIC_INLINE char* nva_itoa(const int value, /* NOLINT */
     return str;
 }
 
+/**
+ * 无符号整型转字符串
+ * @param uvalue 无符号整型数值
+ * @param str 字符串
+ * @param base 基数，取值为 2~16
+ * @param upper_case 是否为大写字母
+ * @return str
+ */
 NVA_STATIC_INLINE char* nva_uitoa(unsigned int uvalue, /* NOLINT */
                                   char* NVA_RESTRICT str,
                                   const unsigned char base,
                                   const NVA_BOOL upper_case)
 {
-    const char index[] = "0123456789abcdef";       /* 索引表 */
-    const char upper_index[] = "0123456789ABCDEF"; /* 大写索引表 */
     signed char i = 0, j, k;
-    char temp;                                     /* 临时变量，用于最后一步逆序 */
+    char temp; /* 临时变量，用于最后一步逆序 */
 
     /* 转换为字符串，注意转换后是逆序的 */
     do {
-        str[i++] = (upper_case ? upper_index[uvalue % base] : index[uvalue % base]);
+        str[i++] = (upper_case ? nva_itoa_str_table_upper[uvalue % base] : nva_itoa_str_table[uvalue % base]);
         uvalue /= base;
     } while (uvalue != 0U);
 
@@ -265,7 +277,14 @@ NVA_STATIC_INLINE char* nva_uitoa(unsigned int uvalue, /* NOLINT */
     return str;
 }
 
-NVA_STATIC_INLINE char* nva_gcvt(double value, const unsigned char precision, char* NVA_RESTRICT str)
+/**
+ * 浮点值转字符串
+ * @param value 浮点类型数值（float 与 double 类型均可）
+ * @param precision 精度（保留小数点后的位数，会自动舍入）
+ * @param str 字符串
+ * @return str
+ */
+NVA_STATIC_INLINE char* nva_gcvt(double value, const unsigned char precision, char* NVA_RESTRICT str) /* NOLINT */
 {
 #if (NVA_USE_GCVT_FUNC)
     return gcvt(value, precision, str);
@@ -383,7 +402,7 @@ NVA_STATIC_INLINE char* nva_gcvt(double value, const unsigned char precision, ch
 
     /* 头尾一一对称交换，i其实就是字符串的长度，索引最大值比长度少1 */
     for (j = k; j <= (i - 1) / 2; j++) {
-        roundoff_value = str[j]; /* 由于 roundoff 不再需要使用，因此把它当作临时变量 */
+        roundoff_value = str[j]; /* 由于 roundoff_value 不再需要使用，因此把它当作临时变量 */
         str[j] = str[i - 1 + k - j];
         str[i - 1 + k - j] = roundoff_value;
     }
