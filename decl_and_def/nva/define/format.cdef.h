@@ -11,16 +11,78 @@
 
 #include "nva/defines.h"
 #include "nva/declare/format.cdecl.h"
+#include "nva/stack.h"
 
 NVA_EXTERN_C_BEGIN
 
-nva_DefaultFmtStatus nva_int_default(int value, nva_DefaultFmtStatus status) /* NOLINT */
+static char nva_default_fmt_buffer[NVA_DEFAULT_FMT_BUFFER_SIZE];
+static nva_Stack nva_default_fmt_stack;
+
+nva_DefaultFmtStatus nva_int_default(const int value, const nva_DefaultFmtStatus status) /* NOLINT */
 {
 #if (NVA_DEFAULT_FMT_BUFFER_SIZE == 0)
     return NVA_ERROR;
 #else
+    if (status.status != NVA_START.status) {
+        return NVA_ERROR;
+    }
 
-    return NVA_START;
+    if (nva_stackPush(&nva_default_fmt_stack, &value, NVA_TYPEID_SINT) == NVA_SUCCESS) {
+        return NVA_START;
+    }
+
+    return NVA_ERROR;
+#endif
+}
+
+nva_DefaultFmtStatus nva_uint_default(const unsigned int uvalue, const nva_DefaultFmtStatus status) /* NOLINT */
+{
+#if (NVA_DEFAULT_FMT_BUFFER_SIZE == 0)
+    return NVA_ERROR;
+#else
+    if (status.status != NVA_START.status) {
+        return NVA_ERROR;
+    }
+
+    if (nva_stackPush(&nva_default_fmt_stack, &uvalue, NVA_TYPEID_UINT) == NVA_SUCCESS) {
+        return NVA_START;
+    }
+
+    return NVA_ERROR;
+#endif
+}
+
+nva_DefaultFmtStatus nva_char_default(const char ch, const nva_DefaultFmtStatus status) /* NOLINT */
+{
+#if (NVA_DEFAULT_FMT_BUFFER_SIZE == 0)
+    return NVA_ERROR;
+#else
+    if (status.status != NVA_START.status) {
+        return NVA_ERROR;
+    }
+
+    if (nva_stackPush(&nva_default_fmt_stack, &ch, NVA_TYPEID_CHAR) == NVA_SUCCESS) {
+        return NVA_START;
+    }
+
+    return NVA_ERROR;
+#endif
+}
+
+nva_DefaultFmtStatus nva_str_default(const char* const str, const nva_DefaultFmtStatus status) /* NOLINT */
+{
+#if (NVA_DEFAULT_FMT_BUFFER_SIZE == 0)
+    return NVA_ERROR;
+#else
+    if (status.status != NVA_START.status) {
+        return NVA_ERROR;
+    }
+
+    if (nva_stackPush(&nva_default_fmt_stack, &str, NVA_TYPEID_STR) == NVA_SUCCESS) {
+        return NVA_START;
+    }
+
+    return NVA_ERROR;
 #endif
 }
 
