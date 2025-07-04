@@ -79,9 +79,10 @@ typedef unsigned char nva_TypeId; /**< 类型ID类型 */
  * 栈结构体
  */
 typedef struct nva_Stack {
-    NVA_SIZE_T type_top;                              /**< 类型栈顶元素的索引 */
-    NVA_SIZE_T data_top;                              /**< 数据栈顶元素的索引 */
+    unsigned int type_top;                            /**< 类型栈顶元素的索引 */
+    unsigned int data_top;                            /**< 数据栈顶元素的索引 */
 
+    unsigned int place[NVA_STACK_DEFAULT_SIZE];       /**< 栈的每一份数据存储的位置 */
     nva_TypeId type[NVA_STACK_DEFAULT_SIZE];          /**< 栈的类型存储 */
     unsigned char data_store[NVA_STACK_DEFAULT_SIZE]; /**< 栈的数据存储 */
 } nva_Stack;
@@ -93,9 +94,13 @@ typedef struct nva_Stack {
 #define NVA_STACK_INIT_VALUE {0}
 
 #if (!NVA_INLINE_MODE)
-nva_ErrorCode nva_stackInit(nva_Stack* stack);
-nva_ErrorCode nva_stackPush(nva_Stack* stack, const void* value, nva_TypeId type_id);
-nva_ErrorCode nva_stackPop(nva_Stack* stack, void* value, nva_TypeId* type_id);
+nva_ErrorCode nva_stackInit(nva_Stack* NVA_RESTRICT stack);
+nva_ErrorCode nva_stackPush(nva_Stack* NVA_RESTRICT stack, const void* NVA_RESTRICT value, nva_TypeId type_id);
+nva_ErrorCode nva_stackPeek(const nva_Stack* NVA_RESTRICT stack,
+                            NVA_SIZE_T i,
+                            void* NVA_RESTRICT value,
+                            nva_TypeId* NVA_RESTRICT type_id);
+nva_ErrorCode nva_stackPop(nva_Stack* NVA_RESTRICT stack, void* NVA_RESTRICT value, nva_TypeId* NVA_RESTRICT type_id);
 #endif /* (!NVA_INLINE_MODE) */
 
 NVA_EXTERN_C_END

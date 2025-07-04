@@ -25,9 +25,9 @@ NVA_EXTERN_C_BEGIN
 /**
  * 栈初始化
  * @param stack 待初始化的栈的地址
- * @return nva_StatusCode
+ * @return nva_ErrorCode
  */
-NVA_STATIC_INLINE NVA_CONSTEXPR nva_ErrorCode nva_stackInit(nva_Stack* stack) /* NOLINT */
+NVA_STATIC_INLINE NVA_CONSTEXPR nva_ErrorCode nva_stackInit(nva_Stack* NVA_RESTRICT stack) /* NOLINT */
 {
     if (stack == NVA_NULL) {
         return NVA_PARAM_ERROR;
@@ -44,17 +44,18 @@ NVA_STATIC_INLINE NVA_CONSTEXPR nva_ErrorCode nva_stackInit(nva_Stack* stack) /*
  * @param stack 栈结构体地址
  * @param value 推送的值的地址
  * @param type_id 推送的值的类型ID
- * @return nva_StatusCode
+ * @return nva_ErrorCode
  */
-NVA_STATIC_INLINE nva_ErrorCode nva_stackPush(nva_Stack* stack, /* NOLINT */
-                                               const void* value,
-                                               const nva_TypeId type_id)
+NVA_STATIC_INLINE nva_ErrorCode nva_stackPush(nva_Stack* NVA_RESTRICT stack, /* NOLINT */
+                                              const void* NVA_RESTRICT value,
+                                              const nva_TypeId type_id)
 {
     if (NVA_STACK_DEPTH(stack) <= stack->data_top + NVA_TYPE_SIZE(type_id)) {
         return NVA_FULL;
     }
 
     nva_memcpy(&stack->data_store[stack->data_top], value, NVA_TYPE_SIZE(type_id));
+    stack->place[stack->type_top] = stack->data_top;
     stack->data_top += NVA_TYPE_SIZE(type_id);
 
     stack->type[stack->type_top] = type_id;
@@ -64,13 +65,39 @@ NVA_STATIC_INLINE nva_ErrorCode nva_stackPush(nva_Stack* stack, /* NOLINT */
 }
 
 /**
+ * 查看栈内数据（不退栈）
+ * @param stack 栈结构体地址
+ * @param i 从栈顶到栈底的第几个元素
+ * @param[out] value 值的地址
+ * @param[out] type_id 类型ID
+ * @return nva_ErrorCode
+ */
+NVA_STATIC_INLINE nva_ErrorCode nva_stackPeek(const nva_Stack* NVA_RESTRICT stack, /* NOLINT */
+                                              const NVA_SIZE_T i,
+                                              void* NVA_RESTRICT value,
+                                              nva_TypeId* NVA_RESTRICT type_id)
+{
+    if (stack->type_top - 1 < i) {
+        return NVA_EMPTY;
+    }
+
+    *type_id = stack->type[stack->type_top - 1 - i];
+
+    nva_memcpy(value, &stack->data_store[stack->place[stack->type_top - 1 - i]], NVA_TYPE_SIZE(*type_id));
+
+    return NVA_SUCCESS;
+}
+
+/**
  * 从栈中弹出数据
  * @param stack 栈结构体地址
  * @param[out] value 弹出的值的地址
  * @param[out] type_id 弹出的值的类型ID
- * @return nva_StatusCode
+ * @return nva_ErrorCode
  */
-NVA_STATIC_INLINE nva_ErrorCode nva_stackPop(nva_Stack* stack, void* value, nva_TypeId* type_id) /* NOLINT */
+NVA_STATIC_INLINE nva_ErrorCode nva_stackPop(nva_Stack* NVA_RESTRICT stack, /* NOLINT */
+                                             void* NVA_RESTRICT value,
+                                             nva_TypeId* NVA_RESTRICT type_id)
 {
     const nva_TypeId top_type_id = stack->type[stack->type_top - 1];
 
