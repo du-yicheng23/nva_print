@@ -108,25 +108,22 @@ typedef size_t NVA_SIZE_T;
 #endif
 
 /**
- * 状态码 正数表示正常状态，负数表示错误
+ * 状态码
  */
-enum nva_StatusCode_ {
-    NVA_NEXT = 1,                   /**< 继续处理 */
-    NVA_FINISH = 0,                 /**< 完成处理 */
-
-    NVA_SUCCESS = 0,                /**< 成功 */
-    NVA_PARAM_ERROR = -1,           /**< 参数错误 */
-    NVA_FULL = -2,                  /**< 数据已满 */
-    NVA_EMPTY = -3                  /**< 数据为空 */
+enum nva_ErrorCode_ {
+    NVA_SUCCESS = 0,               /**< 成功 */
+    NVA_PARAM_ERROR = -1,          /**< 参数错误 */
+    NVA_FULL = -2,                 /**< 数据已满 */
+    NVA_EMPTY = -3                 /**< 数据为空 */
 };
-typedef signed char nva_StatusCode; /**< 状态码类型 */
+typedef signed char nva_ErrorCode; /**< 状态码类型 */
 
 /**
  * 计算数组的元素个数
  * @param array 数组
  * @return 数组的元素个数
  */
-#define NVA_COUNTOF(array) (sizeof(array) / sizeof(array[0]))
+#define NVA_COUNTOF(array)     (sizeof(array) / sizeof(array[0]))
 
 /**
  * 获得整数类型的位数
