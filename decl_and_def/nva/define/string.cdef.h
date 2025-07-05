@@ -184,6 +184,44 @@ NVA_STATIC_INLINE void* nva_memcpy(void* NVA_RESTRICT dest, const void* NVA_REST
 }
 
 /**
+ * 整数字符串转整数
+ * @note 这个函数遇到非数字字符（第一个 '-' 除外）之后就会立刻停止。例如 "-123a" 转化后为 -123
+ * @param str 整数字符串
+ * @return 整数
+ */
+NVA_STATIC_INLINE int nva_atoi(const char* NVA_RESTRICT str) /* NOLINT */
+{
+    int value = 0;
+    int i;
+    int order = 1U;
+    NVA_BOOL is_negative = NVA_FALSE;
+
+    if (str[0] == '-') {
+        is_negative = NVA_TRUE;
+    }
+
+    for (i = (is_negative ? 1 : 0); str[i] >= '0' && str[i] <= '9'; ++i) {
+    }
+
+    --i;
+
+    if (is_negative) {
+        for (; i >= 1; --i) {
+            value -= (str[i] - '0') * order;
+            order *= 10;
+        }
+    }
+    else {
+        for (; i >= 0; --i) {
+            value += (str[i] - '0') * order;
+            order *= 10;
+        }
+    }
+
+    return value;
+}
+
+/**
  * 整型转字符串
  * @param value 整型数值
  * @param str 字符串

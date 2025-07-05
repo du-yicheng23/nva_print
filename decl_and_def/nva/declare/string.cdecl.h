@@ -25,6 +25,8 @@ int nva_strcmp(const char* lhs, const char* rhs);
 
 void* nva_memcpy(void* NVA_RESTRICT dest, const void* NVA_RESTRICT src, NVA_SIZE_T n);
 
+int nva_atoi(const char* NVA_RESTRICT str);
+
 char* nva_itoa(int value, char* NVA_RESTRICT str, unsigned char base, NVA_BOOL upper_case);
 char* nva_uitoa(unsigned int uvalue, char* NVA_RESTRICT str, unsigned char base, NVA_BOOL upper_case);
 
