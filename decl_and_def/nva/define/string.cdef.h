@@ -43,7 +43,7 @@ NVA_EXTERN_C_BEGIN
  * @param str 字符串
  * @return 长度
  */
-NVA_STATIC_INLINE NVA_SIZE_T nva_strlen(const char* str) /* NOLINT */
+NVA_STATIC_INLINE NVA_SIZE_T nva_strlen(const char* const str) /* NOLINT */
 {
 #if (NVA_USE_STD_STRING)
     return strlen(str);
@@ -63,7 +63,7 @@ NVA_STATIC_INLINE NVA_SIZE_T nva_strlen(const char* str) /* NOLINT */
  * @param src 被拼接的字符串
  * @return 拼接完成后的 dest
  */
-NVA_STATIC_INLINE char* nva_strcat(char* NVA_RESTRICT dest, const char* NVA_RESTRICT src) /* NOLINT */
+NVA_STATIC_INLINE char* nva_strcat(char* const NVA_RESTRICT dest, const char* const NVA_RESTRICT src) /* NOLINT */
 {
 #if (NVA_USE_STD_STRING)
     return strcat(dest, src);
@@ -89,7 +89,7 @@ NVA_STATIC_INLINE char* nva_strcat(char* NVA_RESTRICT dest, const char* NVA_REST
  * @param src 被复制的字符串
  * @return 复制完成后的 dest
  */
-NVA_STATIC_INLINE char* nva_strcpy(char* NVA_RESTRICT dest, const char* NVA_RESTRICT src) /* NOLINT */
+NVA_STATIC_INLINE char* nva_strcpy(char* const NVA_RESTRICT dest, const char* const NVA_RESTRICT src) /* NOLINT */
 {
 #if (NVA_USE_STD_STRING)
     return strcpy(dest, src);
@@ -112,7 +112,7 @@ NVA_STATIC_INLINE char* nva_strcpy(char* NVA_RESTRICT dest, const char* NVA_REST
  * @param rhs 比较运算右侧的字符串
  * @return 如果 lhs < rhs 返回负数，如果 lhs > rhs 返回正数，如果相等返回 0
  */
-NVA_STATIC_INLINE int nva_strcmp(const char* lhs, const char* rhs) /* NOLINT */
+NVA_STATIC_INLINE int nva_strcmp(const char* const lhs, const char* const rhs) /* NOLINT */
 {
 #if (NVA_USE_STD_STRING)
     return strcmp(lhs, rhs);
@@ -136,7 +136,9 @@ NVA_STATIC_INLINE int nva_strcmp(const char* lhs, const char* rhs) /* NOLINT */
  * @param n 要拷贝的字节数
  * @return 拷贝后的 dest
  */
-NVA_STATIC_INLINE void* nva_memcpy(void* NVA_RESTRICT dest, const void* NVA_RESTRICT src, NVA_SIZE_T n) /* NOLINT */
+NVA_STATIC_INLINE void* nva_memcpy(void* const NVA_RESTRICT dest, /* NOLINT */
+                                   const void* const NVA_RESTRICT src,
+                                   NVA_SIZE_T n)
 {
 #if (NVA_USE_STD_STRING)
     return memcpy(dest, src, n);
@@ -187,20 +189,24 @@ NVA_STATIC_INLINE void* nva_memcpy(void* NVA_RESTRICT dest, const void* NVA_REST
  * 整数字符串转整数
  * @note 这个函数遇到非数字字符（第一个 '-' 除外）之后就会立刻停止。例如 "-123a" 转化后为 -123
  * @param str 整数字符串
+ * @param[out] width_of_num 转化后的数字的位数（如果是负数，负号也包含在宽度内）
  * @return 整数
  */
-NVA_STATIC_INLINE int nva_atoi(const char* NVA_RESTRICT str) /* NOLINT */
+NVA_STATIC_INLINE int nva_atoi(const char* const NVA_RESTRICT str, unsigned int* const width_of_num) /* NOLINT */
 {
     int value = 0;
     int i;
     int order = 1U;
-    NVA_BOOL is_negative = NVA_FALSE;
-
-    if (str[0] == '-') {
-        is_negative = NVA_TRUE;
-    }
+    const NVA_BOOL is_negative = (str[0] == '-' ? NVA_TRUE : NVA_FALSE);
 
     for (i = (is_negative ? 1 : 0); str[i] >= '0' && str[i] <= '9'; ++i) {
+    }
+
+    if (is_negative && i == 1) {
+        *width_of_num = 0;
+    }
+    else {
+        *width_of_num = i;
     }
 
     --i;
@@ -230,7 +236,7 @@ NVA_STATIC_INLINE int nva_atoi(const char* NVA_RESTRICT str) /* NOLINT */
  * @return str
  */
 NVA_STATIC_INLINE char* nva_itoa(const int value, /* NOLINT */
-                                 char* NVA_RESTRICT str,
+                                 char* const NVA_RESTRICT str,
                                  const unsigned char base,
                                  const NVA_BOOL upper_case)
 {
@@ -282,7 +288,7 @@ NVA_STATIC_INLINE char* nva_itoa(const int value, /* NOLINT */
  * @return str
  */
 NVA_STATIC_INLINE char* nva_uitoa(unsigned int uvalue, /* NOLINT */
-                                  char* NVA_RESTRICT str,
+                                  char* const NVA_RESTRICT str,
                                   const unsigned char base,
                                   const NVA_BOOL upper_case)
 {
@@ -322,7 +328,7 @@ NVA_STATIC_INLINE char* nva_uitoa(unsigned int uvalue, /* NOLINT */
  * @param str 字符串
  * @return str
  */
-NVA_STATIC_INLINE char* nva_gcvt(double value, const unsigned char precision, char* NVA_RESTRICT str) /* NOLINT */
+NVA_STATIC_INLINE char* nva_gcvt(double value, const unsigned char precision, char* const NVA_RESTRICT str) /* NOLINT */
 {
 #if (NVA_USE_GCVT_FUNC)
     return gcvt(value, precision, str);
