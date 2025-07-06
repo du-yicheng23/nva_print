@@ -12,106 +12,96 @@
 #include "nva/defines.h"
 #include "nva/declare/format.cdecl.h"
 #include "nva/stack.h"
+#include "nva/string.h"
 
 NVA_EXTERN_C_BEGIN
 
-static char nva_default_fmt_buffer[NVA_DEFAULT_FMT_BUFFER_SIZE];
-static nva_Stack nva_default_fmt_stack;
+static nva_Stack nva_fmt_stack;
 
-nva_DefaultFmtStatus nva_int_default(const int value, const nva_DefaultFmtStatus status) /* NOLINT */
+#define NVA_IS_TYPE_CHAR(ch)                                                                                  \
+    ((ch) == 'a' || (ch) == 'A' || (ch) == 'b' || (ch) == 'B' || (ch) == 'c' || (ch) == 'd' || (ch) == 'e' || \
+     (ch) == 'E' || (ch) == 'f' || (ch) == 'F' || (ch) == 'g' || (ch) == 'G' || (ch) == 'o' || (ch) == 'p' || \
+     (ch) == 's' || (ch) == 'x' || (ch) == 'X')
+
+nva_FmtStatus nva_int(const int value, const nva_FmtStatus status) /* NOLINT */
 {
-#if (NVA_DEFAULT_FMT_BUFFER_SIZE == 0)
-    return NVA_ERROR;
-#else
     if (status.status != NVA_START.status) {
         return NVA_ERROR;
     }
 
-    if (nva_stackPush(&nva_default_fmt_stack, &value, NVA_TYPEID_SINT) == NVA_SUCCESS) {
+    if (nva_stackPush(&nva_fmt_stack, &value, NVA_TYPEID_SINT) == NVA_SUCCESS) {
         return NVA_START;
     }
 
     return NVA_ERROR;
-#endif
 }
 
-nva_DefaultFmtStatus nva_uint_default(const unsigned int uvalue, const nva_DefaultFmtStatus status) /* NOLINT */
+nva_FmtStatus nva_uint(const unsigned int uvalue, const nva_FmtStatus status) /* NOLINT */
 {
-#if (NVA_DEFAULT_FMT_BUFFER_SIZE == 0)
-    return NVA_ERROR;
-#else
     if (status.status != NVA_START.status) {
         return NVA_ERROR;
     }
 
-    if (nva_stackPush(&nva_default_fmt_stack, &uvalue, NVA_TYPEID_UINT) == NVA_SUCCESS) {
+    if (nva_stackPush(&nva_fmt_stack, &uvalue, NVA_TYPEID_UINT) == NVA_SUCCESS) {
         return NVA_START;
     }
 
     return NVA_ERROR;
-#endif
 }
 
-nva_DefaultFmtStatus nva_char_default(const char ch, const nva_DefaultFmtStatus status) /* NOLINT */
+nva_FmtStatus nva_char(const char ch, const nva_FmtStatus status) /* NOLINT */
 {
-#if (NVA_DEFAULT_FMT_BUFFER_SIZE == 0)
-    return NVA_ERROR;
-#else
     if (status.status != NVA_START.status) {
         return NVA_ERROR;
     }
 
-    if (nva_stackPush(&nva_default_fmt_stack, &ch, NVA_TYPEID_CHAR) == NVA_SUCCESS) {
+    if (nva_stackPush(&nva_fmt_stack, &ch, NVA_TYPEID_CHAR) == NVA_SUCCESS) {
         return NVA_START;
     }
 
     return NVA_ERROR;
-#endif
 }
 
-nva_DefaultFmtStatus nva_str_default(const char* const str, const nva_DefaultFmtStatus status) /* NOLINT */
+nva_FmtStatus nva_str(const char* const str, const nva_FmtStatus status) /* NOLINT */
 {
-#if (NVA_DEFAULT_FMT_BUFFER_SIZE == 0)
-    return NVA_ERROR;
-#else
     if (status.status != NVA_START.status) {
         return NVA_ERROR;
     }
 
-    if (nva_stackPush(&nva_default_fmt_stack, &str, NVA_TYPEID_STR) == NVA_SUCCESS) {
+    if (nva_stackPush(&nva_fmt_stack, &str, NVA_TYPEID_STR) == NVA_SUCCESS) {
         return NVA_START;
     }
 
     return NVA_ERROR;
-#endif
 }
 
-nva_ErrorCode nva_format_default(char* NVA_RESTRICT dest, /* NOLINT */
-                                 const char* NVA_RESTRICT format,
-                                 const nva_DefaultFmtStatus status)
+nva_ErrorCode nva_format(char* NVA_RESTRICT dest, /* NOLINT */
+                         const char* NVA_RESTRICT format,
+                         const nva_FmtStatus status)
 {
-#if (NVA_DEFAULT_FMT_BUFFER_SIZE == 0)
-    return NVA_FAIL;
-#else
-    NVA_SIZE_T i;                  /* for dest */
-    NVA_SIZE_T j;                  /* for format */
+    return NVA_SUCCESS;
+}
 
-    NVA_SIZE_T formatting_head;    /* 在格式化过程中的起点 */
+static nva_ErrorCode nva_formatRecordStyle(char* NVA_RESTRICT dest, const char* const NVA_RESTRICT format)
+{
+    NVA_SIZE_T i;               /* for dest */
+    NVA_SIZE_T j;               /* for format */
+
+    NVA_SIZE_T formatting_head; /* 在格式化过程中的起点 */
+
+    NVA_SIZE_T current_phase_value;
 
     unsigned int stack_index = 0U; /* 用到的存储在栈内的元素 id */
 
-    nva_FormatStyle style;
+    unsigned int phasing_num_width;
+
+    nva_FormatStyle style = {0};
+
+    nva_TypeId type_id;
 
     NVA_BOOL in_formatting = NVA_FALSE;   /* 开始格式化其中一个{}了 */
     NVA_BOOL recording_arg_id = NVA_TRUE; /* 在格式化过程中，正在记录 arg_id */
     NVA_BOOL in_phasing = NVA_FALSE;      /* 在格式化过程中，已经扫描到 : 了，开始解析格式化选项 */
-
-    if (status.status != NVA_START.status) {
-        return NVA_FAIL;
-    }
-    if (dest == NVA_NULL || format == NVA_NULL) {
-        return NVA_PARAM_ERROR;
-    }
 
     for (i = 0U, j = 0U; format[j] != '\0'; ++j) {
         if (format[j] == '{') {
@@ -150,6 +140,16 @@ nva_ErrorCode nva_format_default(char* NVA_RESTRICT dest, /* NOLINT */
             if (format[j] == '}') {
                 /* formatting here... */
 
+                /* get the value from stack */
+                if (style.arg_id == -1) {
+                    nva_stackPeek(&nva_fmt_stack, stack_index, &current_phase_value, &type_id);
+                }
+                else {
+                    nva_stackPeek(&nva_fmt_stack, style.arg_id, &current_phase_value, &type_id);
+                }
+
+
+
                 in_formatting = NVA_FALSE;
                 recording_arg_id = NVA_TRUE;
                 in_phasing = NVA_FALSE;
@@ -161,7 +161,7 @@ nva_ErrorCode nva_format_default(char* NVA_RESTRICT dest, /* NOLINT */
                     return NVA_FORMAT_ERROR;
                 }
 
-                style.arg_id = format[j++] - '0';
+                style.arg_id = (signed char)(format[j++] - '0');
 
                 recording_arg_id = NVA_FALSE;
             }
@@ -232,6 +232,41 @@ nva_ErrorCode nva_format_default(char* NVA_RESTRICT dest, /* NOLINT */
                     style.flag.prefix = 1U;
                     ++j;
                 }
+
+                /* phase width and "0" */
+                if (format[j] >= '0' && format[j] <= '9') {
+                    do {
+                        if (format[j] == '0') {
+                            style.flag.zero = 1U;
+                            ++j;
+
+                            if (!(format[j] >= '0' && format[j] <= '9')) {
+                                break;
+                            }
+                        }
+
+                        style.width = (signed char)nva_atoi(format + j, &phasing_num_width);
+                        j += phasing_num_width;
+                    } while (0);
+                }
+
+                /* phase precision */
+                if (format[j] == '.') {
+                    ++j;
+                    style.precision = (signed char)nva_atoi(format + j, &phasing_num_width);
+                    j += phasing_num_width;
+                }
+
+                /* phase whether add number separator characters or not */
+                if (format[j] == 'L') {
+                    style.flag.L = 1U;
+                    ++j;
+                }
+
+                /* phase type */
+                if (NVA_IS_TYPE_CHAR(format[j])) {
+                    style.type = format[j];
+                }
             }
         }
         else {
@@ -245,7 +280,6 @@ nva_ErrorCode nva_format_default(char* NVA_RESTRICT dest, /* NOLINT */
     }
 
     return NVA_SUCCESS;
-#endif
 }
 
 NVA_EXTERN_C_END

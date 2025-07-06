@@ -17,12 +17,12 @@ NVA_EXTERN_C_BEGIN
  * 默认的格式化状态
  * @note 此处采用结构体实现了 C++ 的“强类型枚举”，可以把它当作强类型枚举使用。
  */
-typedef struct nva_DefaultFmtStatus {
+typedef struct nva_FmtStatus {
     signed char status;
 
-#define NVA_START ((nva_DefaultFmtStatus){-1}) /**< 开始 */
-#define NVA_ERROR ((nva_DefaultFmtStatus){-2}) /**< 错误 */
-} nva_DefaultFmtStatus;
+#define NVA_START ((nva_FmtStatus){-1}) /**< 开始 */
+#define NVA_ERROR ((nva_FmtStatus){-2}) /**< 错误 */
+} nva_FmtStatus;
 
 /**
  * 格式化的每一个选项。参考
@@ -73,29 +73,23 @@ enum nva_FmtStyFlgSign {
     NVA_FMT_FLG_SIGN_SPACE_POSITIVE = 2U       /**< 仅负数有 - ，正数前面空一格 */
 };
 
-nva_DefaultFmtStatus nva_int_default(int value, nva_DefaultFmtStatus status);
-nva_DefaultFmtStatus nva_uint_default(unsigned int uvalue, nva_DefaultFmtStatus status);
-nva_DefaultFmtStatus nva_char_default(char ch, nva_DefaultFmtStatus status);
-nva_DefaultFmtStatus nva_str_default(const char* str, nva_DefaultFmtStatus status);
+nva_FmtStatus nva_int(int value, nva_FmtStatus status);
+nva_FmtStatus nva_uint(unsigned int uvalue, nva_FmtStatus status);
+nva_FmtStatus nva_char(char ch, nva_FmtStatus status);
+nva_FmtStatus nva_str(const char* str, nva_FmtStatus status);
 
 #if (__STDC_VERSION__ > 201100L)
 
-#define nva_add(value, obj)                                                                    \
-    _Generic((value),                                                                          \
-        int: _Generic((obj), nva_DefaultFmtStatus: nva_int_default((value), (obj))),           \
-        unsigned int: _Generic((obj), nva_DefaultFmtStatus: nva_uint_default((value), (obj))), \
-        char: _Generic((obj), nva_DefaultFmtStatus: nva_char_default((value), (obj))),         \
-        const char*: _Generic((obj), nva_DefaultFmtStatus: nva_str_default((value), (obj))))
+#define nva_add(value, obj)                     \
+    _Generic((value),                           \
+        int: nva_int((value), (obj)),           \
+        unsigned int: nva_uint((value), (obj)), \
+        char: nva_char((value), (obj)),         \
+        const char*: nva_str((value), (obj)))
 
 #endif /* (__STDC_VERSION__ > 201100L) */
 
-nva_ErrorCode nva_format_default(char* NVA_RESTRICT dest, const char* NVA_RESTRICT format, nva_DefaultFmtStatus status);
-
-#if (__STDC_VERSION__ > 201100L)
-
-#define nva_format(dest, format, obj) _Generic((obj), nva_DefaultFmtStatus: nva_format_default((dest), (format), (obj)))
-
-#endif /* (__STDC_VERSION__ > 201100L) */
+nva_ErrorCode nva_format(char* NVA_RESTRICT dest, const char* NVA_RESTRICT format, nva_FmtStatus status);
 
 NVA_EXTERN_C_END
 

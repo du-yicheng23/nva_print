@@ -107,10 +107,6 @@ typedef size_t NVA_SIZE_T;
 #define NVA_CONSTEXPR
 #endif
 
-#ifndef NVA_DEFAULT_FMT_BUFFER_SIZE
-#define NVA_DEFAULT_FMT_BUFFER_SIZE 64
-#endif
-
 /**
  * 状态码
  */
