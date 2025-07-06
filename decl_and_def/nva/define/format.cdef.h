@@ -16,12 +16,26 @@
 
 NVA_EXTERN_C_BEGIN
 
+typedef union nva_StackData {
+    NVA_SIZE_T generic_v;
+
+    int int_v;
+    unsigned int uint_v;
+
+    void* ptr_v;
+
+    char char_v;
+    const char* str_v;
+} nva_StackData;
+
 static nva_Stack nva_fmt_stack;
 
 #define NVA_IS_TYPE_CHAR(ch)                                                                                  \
     ((ch) == 'a' || (ch) == 'A' || (ch) == 'b' || (ch) == 'B' || (ch) == 'c' || (ch) == 'd' || (ch) == 'e' || \
      (ch) == 'E' || (ch) == 'f' || (ch) == 'F' || (ch) == 'g' || (ch) == 'G' || (ch) == 'o' || (ch) == 'p' || \
      (ch) == 's' || (ch) == 'x' || (ch) == 'X')
+
+static nva_ErrorCode nva_formatProcess(char* NVA_RESTRICT dest, const char* const NVA_RESTRICT format);
 
 nva_FmtStatus nva_int(const int value, const nva_FmtStatus status) /* NOLINT */
 {
@@ -43,6 +57,19 @@ nva_FmtStatus nva_uint(const unsigned int uvalue, const nva_FmtStatus status) /*
     }
 
     if (nva_stackPush(&nva_fmt_stack, &uvalue, NVA_TYPEID_UINT) == NVA_SUCCESS) {
+        return NVA_START;
+    }
+
+    return NVA_ERROR;
+}
+
+nva_FmtStatus nva_ptr(const void* ptr, const nva_FmtStatus status) /* NOLINT */
+{
+    if (status.status != NVA_START.status) {
+        return NVA_ERROR;
+    }
+
+    if (nva_stackPush(&nva_fmt_stack, &ptr, NVA_TYPEID_PTR) == NVA_SUCCESS) {
         return NVA_START;
     }
 
@@ -79,17 +106,33 @@ nva_ErrorCode nva_format(char* NVA_RESTRICT dest, /* NOLINT */
                          const char* NVA_RESTRICT format,
                          const nva_FmtStatus status)
 {
+    if (dest == NVA_NULL || format == NVA_NULL) {
+        return NVA_PARAM_ERROR;
+    }
+
+    if (status.status != NVA_START.status) {
+        return NVA_FAIL;
+    }
+
+    return nva_formatProcess(dest, format);
+}
+
+static nva_ErrorCode nva_processInteger(char* NVA_RESTRICT dest,
+                                        const nva_FormatStyle* const NVA_RESTRICT style,
+                                        const nva_StackData* const NVA_RESTRICT stack_data,
+                                        const nva_TypeId type_id)
+{
     return NVA_SUCCESS;
 }
 
-static nva_ErrorCode nva_formatRecordStyle(char* NVA_RESTRICT dest, const char* const NVA_RESTRICT format)
+static nva_ErrorCode nva_formatProcess(char* NVA_RESTRICT dest, const char* const NVA_RESTRICT format)
 {
     NVA_SIZE_T i;               /* for dest */
     NVA_SIZE_T j;               /* for format */
 
     NVA_SIZE_T formatting_head; /* 在格式化过程中的起点 */
 
-    NVA_SIZE_T current_phase_value;
+    nva_StackData current_phase_value;
 
     unsigned int stack_index = 0U; /* 用到的存储在栈内的元素 id */
 
@@ -98,6 +141,8 @@ static nva_ErrorCode nva_formatRecordStyle(char* NVA_RESTRICT dest, const char* 
     nva_FormatStyle style = {0};
 
     nva_TypeId type_id;
+
+    nva_ErrorCode error_code;
 
     NVA_BOOL in_formatting = NVA_FALSE;   /* 开始格式化其中一个{}了 */
     NVA_BOOL recording_arg_id = NVA_TRUE; /* 在格式化过程中，正在记录 arg_id */
@@ -142,13 +187,42 @@ static nva_ErrorCode nva_formatRecordStyle(char* NVA_RESTRICT dest, const char* 
 
                 /* get the value from stack */
                 if (style.arg_id == -1) {
-                    nva_stackPeek(&nva_fmt_stack, stack_index, &current_phase_value, &type_id);
+                    error_code = nva_stackPeek(&nva_fmt_stack, stack_index, &current_phase_value.generic_v, &type_id);
                 }
                 else {
-                    nva_stackPeek(&nva_fmt_stack, style.arg_id, &current_phase_value, &type_id);
+                    error_code = nva_stackPeek(&nva_fmt_stack, style.arg_id, &current_phase_value.generic_v, &type_id);
                 }
 
+                if (error_code != NVA_SUCCESS) {
+                    return NVA_FAIL;
+                }
 
+                switch (type_id) {
+                case NVA_TYPEID_SCHAR:
+                case NVA_TYPEID_UCHAR:
+                case NVA_TYPEID_SSHORT:
+                case NVA_TYPEID_USHORT:
+                case NVA_TYPEID_SINT:
+                case NVA_TYPEID_UINT:
+                    error_code = nva_processInteger(dest, &style, &current_phase_value, type_id);
+                    break;
+
+                case NVA_TYPEID_PTR:
+                    break;
+
+                case NVA_TYPEID_CHAR:
+                    break;
+
+                case NVA_TYPEID_STR:
+                    break;
+
+                default:
+                    break;
+                }
+
+                if (error_code != NVA_SUCCESS) {
+                    return NVA_FAIL;
+                }
 
                 in_formatting = NVA_FALSE;
                 recording_arg_id = NVA_TRUE;

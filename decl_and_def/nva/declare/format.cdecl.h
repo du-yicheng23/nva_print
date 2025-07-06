@@ -75,6 +75,7 @@ enum nva_FmtStyFlgSign {
 
 nva_FmtStatus nva_int(int value, nva_FmtStatus status);
 nva_FmtStatus nva_uint(unsigned int uvalue, nva_FmtStatus status);
+nva_FmtStatus nva_ptr(const void* ptr, nva_FmtStatus status);
 nva_FmtStatus nva_char(char ch, nva_FmtStatus status);
 nva_FmtStatus nva_str(const char* str, nva_FmtStatus status);
 
