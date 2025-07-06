@@ -264,7 +264,7 @@ NVA_STATIC_INLINE char* nva_itoa(const int value, /* NOLINT */
     }
 
     /* 头尾一一对称交换，i其实就是字符串的长度，索引最大值比长度少1 */
-    for (j = k; j <= (i - 1) / 2; j++) {
+    for (j = k; j <= (i - 1) / 2; j++) { /* NOLINT: the value of j would not be out of range. */
         temp = str[j];
         str[j] = str[i - 1 + k - j];
         str[i - 1 + k - j] = temp;
@@ -306,7 +306,7 @@ NVA_STATIC_INLINE char* nva_uitoa(unsigned int uvalue, /* NOLINT */
     }
 
     /* 头尾一一对称交换，i其实就是字符串的长度，索引最大值比长度少1 */
-    for (j = k; j <= (i - 1) / 2; j++) {
+    for (j = k; j <= (i - 1) / 2; j++) { /* NOLINT: the value of j would not be out of range. */
         temp = str[j];
         str[j] = str[i - 1 + k - j];
         str[i - 1 + k - j] = temp;
@@ -340,7 +340,7 @@ NVA_STATIC_INLINE char* nva_gcvt(double value, const unsigned char precision, ch
 
     integer = (NVA_SIZE_T)value;
 
-    value -= integer;
+    value -= (double)integer;
 
     /* 要多乘以一次10，因为要根据保留的下一位决定是舍入 */
     for (j = 0U; j <= precision; ++j) {
@@ -350,13 +350,13 @@ NVA_STATIC_INLINE char* nva_gcvt(double value, const unsigned char precision, ch
     decimal = (NVA_SIZE_T)value; /* 取小数部分 */
 
     /* 取出用于判断是否舍入的数字 */
-    roundoff_value = decimal % 10U;
+    roundoff_value = (char)(decimal % 10U);
     decimal /= 10U;
 
     if (precision != 0) {
         /* 转换为字符串，注意转换后是逆序的 */
         do {
-            str[i++] = decimal % 10U + '0';
+            str[i++] = decimal % 10U + '0'; /* NOLINT: we can confim that (decimal % 10U) is in range [0, 9]. */
             decimal /= 10U;
         } while (decimal != 0U);
 
@@ -400,7 +400,7 @@ NVA_STATIC_INLINE char* nva_gcvt(double value, const unsigned char precision, ch
     }
 
     do {
-        str[i++] = integer % 10U + '0';
+        str[i++] = integer % 10U + '0'; /* NOLINT: we can confim that (decimal % 10U) is in range [0, 9]. */
         integer /= 10U;
     } while (integer != 0U);
 
@@ -439,8 +439,8 @@ NVA_STATIC_INLINE char* nva_gcvt(double value, const unsigned char precision, ch
     }
 
     /* 头尾一一对称交换，i其实就是字符串的长度，索引最大值比长度少1 */
-    for (j = k; j <= (i - 1) / 2; j++) {
-        roundoff_value = str[j]; /* 由于 roundoff_value 不再需要使用，因此把它当作临时变量 */
+    for (j = k; j <= (i - 1) / 2; j++) { /* NOLINT: the value of j would not be out of range. */
+        roundoff_value = str[j];         /* 由于 roundoff_value 不再需要使用，因此把它当作临时变量 */
         str[j] = str[i - 1 + k - j];
         str[i - 1 + k - j] = roundoff_value;
     }
