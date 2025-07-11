@@ -28,6 +28,21 @@ typedef union nva_StackData {
     const char* str_v;
 } nva_StackData;
 
+/* clang-format off */
+
+/**
+ * 根据类型ID获得栈的整数类型数据
+ * @param value 栈的数据
+ * @param type_id 类型ID
+ */
+#define NVA_STACK_GET_INTEGER(value, type_id)                               \
+    (((nva_TypeId)(type_id)) == NVA_TYPEID_SINT ? ((value).int_v)         \
+         : (((nva_TypeId)(type_id)) == NVA_TYPEID_UINT ? ((value).uint_v) \
+         : (((nva_TypeId)(type_id)) == NVA_TYPEID_CHAR ? ((value).char_v) \
+         : 0)))
+
+/* clang-format on */
+
 static nva_Stack nva_fmt_stack;
 
 #define NVA_IS_TYPE_CHAR(ch)                                                                                  \
@@ -35,7 +50,7 @@ static nva_Stack nva_fmt_stack;
      (ch) == 'E' || (ch) == 'f' || (ch) == 'F' || (ch) == 'g' || (ch) == 'G' || (ch) == 'o' || (ch) == 'p' || \
      (ch) == 's' || (ch) == 'x' || (ch) == 'X')
 
-static nva_ErrorCode nva_formatProcess(char* NVA_RESTRICT dest, const char* const NVA_RESTRICT format);
+static nva_ErrorCode nva_formatProcess(char* NVA_RESTRICT dest, const char* NVA_RESTRICT format);
 
 nva_FmtStatus nva_int(const int value, const nva_FmtStatus status) /* NOLINT */
 {
@@ -117,15 +132,99 @@ nva_ErrorCode nva_format(char* NVA_RESTRICT dest, /* NOLINT */
     return nva_formatProcess(dest, format);
 }
 
-static nva_ErrorCode nva_processInteger(char* NVA_RESTRICT dest,
-                                        const nva_FormatStyle* const NVA_RESTRICT style,
+static nva_ErrorCode nva_processInteger(char* const NVA_RESTRICT dest,
+                                        nva_FormatStyle* const NVA_RESTRICT style,
                                         const nva_StackData* const NVA_RESTRICT stack_data,
                                         const nva_TypeId type_id)
 {
+    unsigned char i = 0U;
+    unsigned int width_of_num;
+    nva_NumToStringAttr num_to_string_attr = {.base = 10, .upper_case = NVA_FALSE};
+
+    if (style->flag.align == NVA_FMT_FLG_ALIGN_DEFAULT) {
+        style->flag.align = NVA_FMT_FLG_ALIGN_RIGHT;
+    }
+
+    if (style->type == '\0') {
+        style->type = 'd';
+    }
+
+    switch (style->type) {
+    case 'b':
+    case 'B':
+        num_to_string_attr.base = 2;
+        break;
+
+    case 'd':
+        break;
+
+    case 'o':
+        num_to_string_attr.base = 8;
+        break;
+
+    case 'x':
+    case 'X':
+        num_to_string_attr.base = 16;
+        break;
+
+    default:
+        break;
+    }
+
+    if (style->type >= 'A' && style->type <= 'Z') {
+        num_to_string_attr.upper_case = NVA_TRUE;
+    }
+
+    if (style->flag.prefix) {
+        switch (style->type) {
+        case 'b':
+            nva_strcat(dest, "0b");
+            break;
+        case 'B':
+            nva_strcat(dest, "0B");
+            break;
+
+        case 'x':
+            nva_strcat(dest, "0x");
+            break;
+        case 'X':
+            nva_strcat(dest, "0X");
+            break;
+
+        default:
+            break;
+        }
+
+        i += 2;
+    }
+
+    if (type_id == NVA_TYPEID_CHAR || style->type == 'c') {
+        dest[i] = stack_data->char_v;
+        width_of_num = 1U;
+    }
+    else if (NVA_IS_SIGNED(type_id)) {
+        nva_itoa(NVA_STACK_GET_INTEGER(*stack_data, type_id), dest + i, &num_to_string_attr, &width_of_num);
+    }
+    else {
+        nva_uitoa(NVA_STACK_GET_INTEGER(*stack_data, type_id), dest + i, &num_to_string_attr, &width_of_num);
+    }
+    i += width_of_num;
+
+    switch (style->flag.align) {
+    case NVA_FMT_FLG_ALIGN_LEFT:
+        for (; i < style->width; ++i) {
+            dest[i] = style->filler;
+        }
+        break;
+
+    default:
+        break;
+    }
+
     return NVA_SUCCESS;
 }
 
-static nva_ErrorCode nva_formatProcess(char* NVA_RESTRICT dest, const char* const NVA_RESTRICT format)
+static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char* const NVA_RESTRICT format)
 {
     NVA_SIZE_T i;               /* for dest */
     NVA_SIZE_T j;               /* for format */
@@ -204,7 +303,7 @@ static nva_ErrorCode nva_formatProcess(char* NVA_RESTRICT dest, const char* cons
                 case NVA_TYPEID_USHORT:
                 case NVA_TYPEID_SINT:
                 case NVA_TYPEID_UINT:
-                    error_code = nva_processInteger(dest, &style, &current_phase_value, type_id);
+                    error_code = nva_processInteger(dest + i, &style, &current_phase_value, type_id);
                     break;
 
                 case NVA_TYPEID_PTR:
@@ -352,6 +451,8 @@ static nva_ErrorCode nva_formatProcess(char* NVA_RESTRICT dest, const char* cons
             }
         }
     }
+
+    dest[i] = '\0';
 
     return NVA_SUCCESS;
 }
