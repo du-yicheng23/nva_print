@@ -13,6 +13,14 @@
 
 NVA_EXTERN_C_BEGIN
 
+/**
+ * 数字转字符串的属性
+ */
+typedef struct nva_NumToStringAttr {
+    unsigned char base;  /**< 基数 */
+    NVA_BOOL upper_case; /**< 是否为大写 */
+} nva_NumToStringAttr;
+
 extern const char nva_itoa_str_table[17];
 extern const char nva_itoa_str_table_upper[17];
 
@@ -27,8 +35,14 @@ void* nva_memcpy(void* NVA_RESTRICT dest, const void* NVA_RESTRICT src, NVA_SIZE
 
 int nva_atoi(const char* NVA_RESTRICT str, unsigned int* width_of_num);
 
-char* nva_itoa(int value, char* NVA_RESTRICT str, unsigned char base, NVA_BOOL upper_case);
-char* nva_uitoa(unsigned int uvalue, char* NVA_RESTRICT str, unsigned char base, NVA_BOOL upper_case);
+char* nva_itoa(int value,
+               char* NVA_RESTRICT str,
+               const nva_NumToStringAttr* NVA_RESTRICT attr,
+               unsigned int* width_of_num);
+char* nva_uitoa(unsigned int uvalue,
+                char* NVA_RESTRICT str,
+                const nva_NumToStringAttr* NVA_RESTRICT attr,
+                unsigned int* width_of_num);
 
 char* nva_gcvt(double value, unsigned char precision, char* NVA_RESTRICT str);
 

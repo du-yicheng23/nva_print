@@ -231,14 +231,14 @@ NVA_STATIC_INLINE int nva_atoi(const char* const NVA_RESTRICT str, unsigned int*
  * 整型转字符串
  * @param value 整型数值
  * @param str 字符串
- * @param base 基数，取值为 2~16
- * @param upper_case 是否为大写字母
+ * @param attr 转化属性
+ * @param[out] width_of_num 转化后的数字的位数（如果是负数，负号也包含在宽度内）
  * @return str
  */
 NVA_STATIC_INLINE char* nva_itoa(const int value, /* NOLINT */
                                  char* const NVA_RESTRICT str,
-                                 const unsigned char base,
-                                 const NVA_BOOL upper_case)
+                                 const nva_NumToStringAttr* const NVA_RESTRICT attr,
+                                 unsigned int* const width_of_num)
 {
     unsigned int uvalue;
     signed char i = 0, j, k;
@@ -255,10 +255,12 @@ NVA_STATIC_INLINE char* nva_itoa(const int value, /* NOLINT */
 
     /* 转换部分，注意转换后是逆序的 */
     do {
-        str[i++] = (upper_case ? nva_itoa_str_table_upper[uvalue % base] : nva_itoa_str_table[uvalue % base]);
-        uvalue /= base;
+        str[i++] = (attr->upper_case ? nva_itoa_str_table_upper[uvalue % attr->base]
+                                     : nva_itoa_str_table[uvalue % attr->base]);
+        uvalue /= attr->base;
     } while (uvalue != 0U);
 
+    *width_of_num = (unsigned int)i;
     str[i] = '\0';
 
     /* 将顺序调整过来 */
@@ -283,24 +285,26 @@ NVA_STATIC_INLINE char* nva_itoa(const int value, /* NOLINT */
  * 无符号整型转字符串
  * @param uvalue 无符号整型数值
  * @param str 字符串
- * @param base 基数，取值为 2~16
- * @param upper_case 是否为大写字母
+ * @param attr 转化属性
+ * @param[out] width_of_num 转化后的数字的位数（如果是负数，负号也包含在宽度内）
  * @return str
  */
 NVA_STATIC_INLINE char* nva_uitoa(unsigned int uvalue, /* NOLINT */
                                   char* const NVA_RESTRICT str,
-                                  const unsigned char base,
-                                  const NVA_BOOL upper_case)
+                                  const nva_NumToStringAttr* const NVA_RESTRICT attr,
+                                  unsigned int* const width_of_num)
 {
     signed char i = 0, j, k;
     char temp; /* 临时变量，用于最后一步逆序 */
 
     /* 转换为字符串，注意转换后是逆序的 */
     do {
-        str[i++] = (upper_case ? nva_itoa_str_table_upper[uvalue % base] : nva_itoa_str_table[uvalue % base]);
-        uvalue /= base;
+        str[i++] = (attr->upper_case ? nva_itoa_str_table_upper[uvalue % attr->base]
+                                     : nva_itoa_str_table[uvalue % attr->base]);
+        uvalue /= attr->base;
     } while (uvalue != 0U);
 
+    *width_of_num = (unsigned int)i;
     str[i] = '\0';
 
     /* 将顺序调整过来 */
