@@ -16,6 +16,9 @@
 
 NVA_EXTERN_C_BEGIN
 
+/**
+ * 栈的数据
+ */
 typedef union nva_StackData {
     NVA_SIZE_T generic_v;
 
@@ -28,6 +31,14 @@ typedef union nva_StackData {
     const char* str_v;
 } nva_StackData;
 
+/**
+ * 栈数据的信息
+ */
+typedef struct nva_StackDataInfo {
+    nva_StackData* stack_data; /**< 栈原本的数据 */
+    nva_TypeId type_id;        /**< 数据的类型ID */
+} nva_StackDataInfo;
+
 /* clang-format off */
 
 /**
@@ -35,10 +46,10 @@ typedef union nva_StackData {
  * @param value 栈的数据
  * @param type_id 类型ID
  */
-#define NVA_STACK_GET_INTEGER(value, type_id)                               \
-    (((nva_TypeId)(type_id)) == NVA_TYPEID_SINT ? ((value).int_v)         \
-         : (((nva_TypeId)(type_id)) == NVA_TYPEID_UINT ? ((value).uint_v) \
-         : (((nva_TypeId)(type_id)) == NVA_TYPEID_CHAR ? ((value).char_v) \
+#define NVA_STACK_GET_INTEGER(data_info)                                                                \
+           (((nva_TypeId)((data_info).type_id)) == NVA_TYPEID_SINT ? (((data_info).stack_data)->int_v)  \
+         : (((nva_TypeId)((data_info).type_id)) == NVA_TYPEID_UINT ? (((data_info).stack_data)->uint_v) \
+         : (((nva_TypeId)((data_info).type_id)) == NVA_TYPEID_CHAR ? (((data_info).stack_data)->char_v) \
          : 0)))
 
 /* clang-format on */
@@ -134,8 +145,8 @@ nva_ErrorCode nva_format(char* NVA_RESTRICT dest, /* NOLINT */
 
 static nva_ErrorCode nva_processInteger(char* const NVA_RESTRICT dest,
                                         nva_FormatStyle* const NVA_RESTRICT style,
-                                        const nva_StackData* const NVA_RESTRICT stack_data,
-                                        const nva_TypeId type_id)
+                                        const nva_StackDataInfo* const NVA_RESTRICT data_info,
+                                        unsigned int* width_of_process)
 {
     unsigned char i = 0U;
     unsigned int width_of_num;
@@ -198,15 +209,15 @@ static nva_ErrorCode nva_processInteger(char* const NVA_RESTRICT dest,
         i += 2;
     }
 
-    if (type_id == NVA_TYPEID_CHAR || style->type == 'c') {
-        dest[i] = stack_data->char_v;
+    if (data_info->type_id == NVA_TYPEID_CHAR || style->type == 'c') {
+        dest[i] = data_info->stack_data->char_v;
         width_of_num = 1U;
     }
-    else if (NVA_IS_SIGNED(type_id)) {
-        nva_itoa(NVA_STACK_GET_INTEGER(*stack_data, type_id), dest + i, &num_to_string_attr, &width_of_num);
+    else if (NVA_IS_SIGNED(data_info->type_id)) {
+        nva_itoa(NVA_STACK_GET_INTEGER(*data_info), dest + i, &num_to_string_attr, &width_of_num);
     }
     else {
-        nva_uitoa(NVA_STACK_GET_INTEGER(*stack_data, type_id), dest + i, &num_to_string_attr, &width_of_num);
+        nva_uitoa(NVA_STACK_GET_INTEGER(*data_info), dest + i, &num_to_string_attr, &width_of_num);
     }
     i += width_of_num;
 
@@ -221,6 +232,8 @@ static nva_ErrorCode nva_processInteger(char* const NVA_RESTRICT dest,
         break;
     }
 
+    *width_of_process = i;
+
     return NVA_SUCCESS;
 }
 
@@ -232,6 +245,7 @@ static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char
     NVA_SIZE_T formatting_head; /* 在格式化过程中的起点 */
 
     nva_StackData current_phase_value;
+    nva_StackDataInfo current_phase_data_info;
 
     unsigned int stack_index = 0U; /* 用到的存储在栈内的元素 id */
 
@@ -247,7 +261,7 @@ static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char
     NVA_BOOL recording_arg_id = NVA_TRUE; /* 在格式化过程中，正在记录 arg_id */
     NVA_BOOL in_phasing = NVA_FALSE;      /* 在格式化过程中，已经扫描到 : 了，开始解析格式化选项 */
 
-    for (i = 0U, j = 0U; format[j] != '\0'; ++j) {
+    for (i = 0U, j = 0U; format[j] != '\0';) {
         if (format[j] == '{') {
             if (in_formatting) {
                 return NVA_FORMAT_ERROR;
@@ -261,6 +275,7 @@ static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char
 
             if (format[j + 1] == '{') {
                 dest[i++] = format[j++];
+                ++j;
                 continue;
             }
 
@@ -296,6 +311,8 @@ static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char
                     return NVA_FAIL;
                 }
 
+                current_phase_data_info = (nva_StackDataInfo){.stack_data = &current_phase_value, .type_id = type_id};
+
                 switch (type_id) {
                 case NVA_TYPEID_SCHAR:
                 case NVA_TYPEID_UCHAR:
@@ -303,7 +320,7 @@ static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char
                 case NVA_TYPEID_USHORT:
                 case NVA_TYPEID_SINT:
                 case NVA_TYPEID_UINT:
-                    error_code = nva_processInteger(dest + i, &style, &current_phase_value, type_id);
+                    error_code = nva_processInteger(dest + i, &style, &current_phase_data_info, &phasing_num_width);
                     break;
 
                 case NVA_TYPEID_PTR:
@@ -318,6 +335,7 @@ static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char
                 default:
                     break;
                 }
+                i += phasing_num_width;
 
                 if (error_code != NVA_SUCCESS) {
                     return NVA_FAIL;
@@ -327,10 +345,13 @@ static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char
                 recording_arg_id = NVA_TRUE;
                 in_phasing = NVA_FALSE;
                 ++stack_index;
+
+                ++j;
+                continue;
             }
 
             if (recording_arg_id && format[j] >= '0' && format[j] <= '9') {
-                if (format[j + 1] != '}' || format[j + 1] != ':') {
+                if (format[j + 1] != '}' && format[j + 1] != ':') {
                     return NVA_FORMAT_ERROR;
                 }
 
@@ -438,16 +459,17 @@ static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char
 
                 /* phase type */
                 if (NVA_IS_TYPE_CHAR(format[j])) {
-                    style.type = format[j];
+                    style.type = format[j++];
                 }
             }
         }
         else {
             if (format[j] == '}' && format[j + 1] == '}') {
                 dest[i++] = format[j++];
+                ++j;
             }
             else {
-                dest[i++] = format[j];
+                dest[i++] = format[j++];
             }
         }
     }
