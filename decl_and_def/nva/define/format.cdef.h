@@ -132,6 +132,8 @@ nva_ErrorCode nva_format(char* NVA_RESTRICT dest, /* NOLINT */
                          const char* NVA_RESTRICT format,
                          const nva_FmtStatus status)
 {
+    nva_ErrorCode error_code;
+
     if (dest == NVA_NULL || format == NVA_NULL) {
         return NVA_PARAM_ERROR;
     }
@@ -140,7 +142,12 @@ nva_ErrorCode nva_format(char* NVA_RESTRICT dest, /* NOLINT */
         return NVA_FAIL;
     }
 
-    return nva_formatProcess(dest, format);
+    error_code = nva_formatProcess(dest, format);
+
+    nva_fmt_stack.data_top = 0U;
+    nva_fmt_stack.type_top = 0U;
+
+    return error_code;
 }
 
 static nva_ErrorCode nva_processInteger(char* const NVA_RESTRICT dest,
@@ -190,23 +197,25 @@ static nva_ErrorCode nva_processInteger(char* const NVA_RESTRICT dest,
         switch (style->type) {
         case 'b':
             nva_strcat(dest, "0b");
-            break;
+            goto end_of_style_check;
         case 'B':
             nva_strcat(dest, "0B");
-            break;
+            goto end_of_style_check;
 
         case 'x':
             nva_strcat(dest, "0x");
-            break;
+            goto end_of_style_check;
         case 'X':
             nva_strcat(dest, "0X");
+            goto end_of_style_check;
+
+        end_of_style_check:
+            i += 2;
             break;
 
         default:
             break;
         }
-
-        i += 2;
     }
 
     if (data_info->type_id == NVA_TYPEID_CHAR || style->type == 'c') {
@@ -239,10 +248,8 @@ static nva_ErrorCode nva_processInteger(char* const NVA_RESTRICT dest,
 
 static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char* const NVA_RESTRICT format)
 {
-    NVA_SIZE_T i;               /* for dest */
-    NVA_SIZE_T j;               /* for format */
-
-    NVA_SIZE_T formatting_head; /* 在格式化过程中的起点 */
+    NVA_SIZE_T i; /* for dest */
+    NVA_SIZE_T j; /* for format */
 
     nva_StackData current_phase_value;
     nva_StackDataInfo current_phase_data_info;
@@ -260,6 +267,7 @@ static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char
     NVA_BOOL in_formatting = NVA_FALSE;   /* 开始格式化其中一个{}了 */
     NVA_BOOL recording_arg_id = NVA_TRUE; /* 在格式化过程中，正在记录 arg_id */
     NVA_BOOL in_phasing = NVA_FALSE;      /* 在格式化过程中，已经扫描到 : 了，开始解析格式化选项 */
+    NVA_BOOL have_phased;
 
     for (i = 0U, j = 0U; format[j] != '\0';) {
         if (format[j] == '{') {
@@ -280,7 +288,6 @@ static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char
             }
 
             in_formatting = NVA_TRUE;
-            formatting_head = j;
             ++j;
 
             style = (nva_FormatStyle){.arg_id = -1,
@@ -366,6 +373,8 @@ static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char
             }
 
             if (in_phasing) {
+                have_phased = NVA_FALSE;
+
                 /* phase align */
                 switch (format[j]) {
                 case '<':
@@ -382,7 +391,7 @@ static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char
 
                 phase_filler:
                     if (format[j - 1] != ':') {
-                        style.filler = format[j];
+                        style.filler = format[j - 1];
                     }
                     else {
                         if (format[j - 2] == ':') {
@@ -391,6 +400,7 @@ static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char
                     }
 
                     ++j;
+                    have_phased = NVA_TRUE;
 
                     break;
 
@@ -414,6 +424,7 @@ static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char
 
                 phase_sign_end:
                     ++j;
+                    have_phased = NVA_TRUE;
 
                     break;
 
@@ -425,6 +436,7 @@ static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char
                 if (format[j] == '#') {
                     style.flag.prefix = 1U;
                     ++j;
+                    have_phased = NVA_TRUE;
                 }
 
                 /* phase width and "0" */
@@ -442,6 +454,7 @@ static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char
                         style.width = (signed char)nva_atoi(format + j, &phasing_num_width);
                         j += phasing_num_width;
                     } while (0);
+                    have_phased = NVA_TRUE;
                 }
 
                 /* phase precision */
@@ -449,17 +462,24 @@ static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char
                     ++j;
                     style.precision = (signed char)nva_atoi(format + j, &phasing_num_width);
                     j += phasing_num_width;
+                    have_phased = NVA_TRUE;
                 }
 
                 /* phase whether add number separator characters or not */
                 if (format[j] == 'L') {
                     style.flag.L = 1U;
                     ++j;
+                    have_phased = NVA_TRUE;
                 }
 
                 /* phase type */
                 if (NVA_IS_TYPE_CHAR(format[j])) {
                     style.type = format[j++];
+                    have_phased = NVA_TRUE;
+                }
+
+                if (!have_phased) {
+                    ++j;
                 }
             }
         }
