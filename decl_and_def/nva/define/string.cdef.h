@@ -136,52 +136,162 @@ NVA_STATIC_INLINE int nva_strcmp(const char* const lhs, const char* const rhs) /
  * @param n 要拷贝的字节数
  * @return 拷贝后的 dest
  */
-NVA_STATIC_INLINE void* nva_memcpy(void* const NVA_RESTRICT dest, /* NOLINT */
-                                   const void* const NVA_RESTRICT src,
+NVA_STATIC_INLINE void* nva_memcpy(void* NVA_RESTRICT dest, /* NOLINT */
+                                   const void* NVA_RESTRICT src,
                                    NVA_SIZE_T n)
 {
 #if (NVA_USE_STD_STRING)
     return memcpy(dest, src, n);
 #else
-    NVA_SIZE_T i;
+    void* const dest_store = dest;
 
     if (n % sizeof(unsigned NVA_LONG_LONG) == 0) {
         n /= sizeof(unsigned NVA_LONG_LONG);
 
-        for (i = 0U; i < n; ++i) {
-            ((unsigned NVA_LONG_LONG*)dest)[i] = ((const unsigned NVA_LONG_LONG*)src)[i];
+        for (; n > 0; --n) {
+            (*(unsigned NVA_LONG_LONG*)dest) = (*(const unsigned NVA_LONG_LONG*)src);
+            ++(*((unsigned NVA_LONG_LONG**)&dest));
+            ++(*((const unsigned NVA_LONG_LONG**)&src));
         }
     }
 #if (NVA_LLONG_ENABLED)
     else if (n % sizeof(unsigned long) == 0) {
         n /= sizeof(unsigned long);
 
-        for (i = 0U; i < n; ++i) {
-            ((unsigned long*)dest)[i] = ((const unsigned long*)src)[i];
+        for (; n > 0; --n) {
+            (*(unsigned long*)dest) = (*(const unsigned long*)src);
+            ++(*((unsigned long**)&dest));
+            ++(*((const unsigned long**)&src));
         }
     }
 #endif /* (NVA_LLONG_ENABLED) */
     else if (n % sizeof(unsigned int) == 0) {
         n /= sizeof(unsigned int);
 
-        for (i = 0U; i < n; ++i) {
-            ((unsigned int*)dest)[i] = ((const unsigned int*)src)[i];
+        for (; n > 0; --n) {
+            (*(unsigned int*)dest) = (*(const unsigned int*)src);
+            ++(*((unsigned int**)&dest));
+            ++(*((const unsigned int**)&src));
         }
     }
     else if (n % sizeof(unsigned short) == 0) {
         n /= sizeof(unsigned short);
 
-        for (i = 0U; i < n; ++i) {
-            ((unsigned short*)dest)[i] = ((const unsigned short*)src)[i];
+        for (; n > 0; --n) {
+            (*(unsigned short*)dest) = (*(const unsigned short*)src);
+            ++(*((unsigned short**)&dest));
+            ++(*((const unsigned short**)&src));
         }
     }
     else {
-        for (i = 0U; i < n; ++i) {
-            ((unsigned char*)dest)[i] = ((const unsigned char*)src)[i];
+        for (; n > 0; --n) {
+            (*(unsigned char*)dest) = (*(const unsigned char*)src);
+            ++(*((unsigned char**)&dest));
+            ++(*((const unsigned char**)&src));
         }
     }
 
-    return dest;
+    return dest_store;
+#endif
+}
+
+void* nva_memmove(void* dest, const void* src, NVA_SIZE_T n) /* NOLINT */
+{
+#if (NVA_USE_STD_STRING)
+    return memmove(dest, src, n);
+#else
+    void* const dest_store = dest;
+
+    if (src == dest) {
+        return dest;
+    }
+
+    if (src > dest) {
+        if (n % sizeof(unsigned NVA_LONG_LONG) == 0) {
+            n /= sizeof(unsigned NVA_LONG_LONG);
+
+            for (; n > 0; --n) {
+                (*(unsigned NVA_LONG_LONG*)dest) = (*(const unsigned NVA_LONG_LONG*)src);
+                ++(*((unsigned NVA_LONG_LONG**)&dest));
+                ++(*((const unsigned NVA_LONG_LONG**)&src));
+            }
+        }
+#if (NVA_LLONG_ENABLED)
+        else if (n % sizeof(unsigned long) == 0) {
+            n /= sizeof(unsigned long);
+
+            for (; n > 0; --n) {
+                (*(unsigned long*)dest) = (*(const unsigned long*)src);
+                ++(*((unsigned long**)&dest));
+                ++(*((const unsigned long**)&src));
+            }
+        }
+#endif /* (NVA_LLONG_ENABLED) */
+        else if (n % sizeof(unsigned int) == 0) {
+            n /= sizeof(unsigned int);
+
+            for (; n > 0; --n) {
+                (*(unsigned int*)dest) = (*(const unsigned int*)src);
+                ++(*((unsigned int**)&dest));
+                ++(*((const unsigned int**)&src));
+            }
+        }
+        else if (n % sizeof(unsigned short) == 0) {
+            n /= sizeof(unsigned short);
+
+            for (; n > 0; --n) {
+                (*(unsigned short*)dest) = (*(const unsigned short*)src);
+                ++(*((unsigned short**)&dest));
+                ++(*((const unsigned short**)&src));
+            }
+        }
+        else {
+            for (; n > 0; --n) {
+                (*(unsigned char*)dest) = (*(const unsigned char*)src);
+                ++(*((unsigned char**)&dest));
+                ++(*((const unsigned char**)&src));
+            }
+        }
+    }
+    else {
+        if (n % sizeof(unsigned NVA_LONG_LONG) == 0) {
+            n /= sizeof(unsigned NVA_LONG_LONG);
+
+            for (; n > 0; --n) {
+                ((unsigned NVA_LONG_LONG*)dest)[n - 1] = ((const unsigned NVA_LONG_LONG*)src)[n - 1];
+            }
+        }
+#if (NVA_LLONG_ENABLED)
+        else if (n % sizeof(unsigned long) == 0) {
+            n /= sizeof(unsigned long);
+
+            for (; n > 0; --n) {
+                ((unsigned long*)dest)[n - 1] = ((const unsigned long*)src)[n - 1];
+            }
+        }
+#endif /* (NVA_LLONG_ENABLED) */
+        else if (n % sizeof(unsigned int) == 0) {
+            n /= sizeof(unsigned int);
+
+            for (; n > 0; --n) {
+                ((unsigned int*)dest)[n - 1] = ((const unsigned int*)src)[n - 1];
+            }
+        }
+        else if (n % sizeof(unsigned short) == 0) {
+            n /= sizeof(unsigned short);
+
+            for (; n > 0; --n) {
+                ((unsigned short*)dest)[n - 1] = ((const unsigned short*)src)[n - 1];
+            }
+        }
+        else {
+            for (; n > 0; --n) {
+                ((unsigned char*)dest)[n - 1] = ((const unsigned char*)src)[n - 1];
+            }
+        }
+    }
+
+    return dest_store;
 #endif
 }
 
