@@ -39,12 +39,13 @@ typedef struct nva_StackDataInfo {
     nva_TypeId type_id;        /**< 数据的类型ID */
 } nva_StackDataInfo;
 
+static nva_Stack nva_fmt_stack; /* declare */
+
 /* clang-format off */
 
 /**
  * 根据类型ID获得栈的整数类型数据
- * @param value 栈的数据
- * @param type_id 类型ID
+ * @param data_info 栈数据的信息（取结构体 nva_StackDataInfo 的变量）
  */
 #define NVA_STACK_GET_INTEGER(data_info)                                                                \
            (((nva_TypeId)((data_info).type_id)) == NVA_TYPEID_SINT ? (((data_info).stack_data)->int_v)  \
@@ -54,14 +55,26 @@ typedef struct nva_StackDataInfo {
 
 /* clang-format on */
 
-static nva_Stack nva_fmt_stack;
-
+/**
+ * 判断一个字符是否表示 types
+ * @param ch 待判断的字符
+ */
 #define NVA_IS_TYPE_CHAR(ch)                                                                                  \
     ((ch) == 'a' || (ch) == 'A' || (ch) == 'b' || (ch) == 'B' || (ch) == 'c' || (ch) == 'd' || (ch) == 'e' || \
      (ch) == 'E' || (ch) == 'f' || (ch) == 'F' || (ch) == 'g' || (ch) == 'G' || (ch) == 'o' || (ch) == 'p' || \
      (ch) == 's' || (ch) == 'x' || (ch) == 'X')
 
 static nva_ErrorCode nva_formatProcess(char* NVA_RESTRICT dest, const char* NVA_RESTRICT format);
+static nva_ErrorCode nva_processInteger(char* NVA_RESTRICT dest,
+                                        nva_FormatStyle* NVA_RESTRICT style,
+                                        const nva_StackDataInfo* NVA_RESTRICT data_info,
+                                        unsigned int* width_of_process);
+
+/**
+ * @defgroup nva_ParamFunctions
+ * @brief 用于“传参”的函数
+ * @{
+ */
 
 nva_FmtStatus nva_int(const int value, const nva_FmtStatus status) /* NOLINT */
 {
@@ -128,6 +141,17 @@ nva_FmtStatus nva_str(const char* const str, const nva_FmtStatus status) /* NOLI
     return NVA_ERROR;
 }
 
+/**
+ * @}
+ */
+
+/**
+ * 格式化
+ * @param dest 承接格式化字符串的内存
+ * @param format 格式化字符串
+ * @param status 格式化状态
+ * @return nva_ErrorCode
+ */
 nva_ErrorCode nva_format(char* NVA_RESTRICT dest, /* NOLINT */
                          const char* NVA_RESTRICT format,
                          const nva_FmtStatus status)

@@ -73,11 +73,22 @@ enum nva_FmtStyFlgSign {
     NVA_FMT_FLG_SIGN_SPACE_POSITIVE = 2U       /**< 仅负数有 - ，正数前面空一格 */
 };
 
+nva_ErrorCode nva_format(char* NVA_RESTRICT dest, const char* NVA_RESTRICT format, nva_FmtStatus status);
+
+/**
+ * @addtogroup nva_ParamFunctions
+ * @{
+ */
+
 nva_FmtStatus nva_int(int value, nva_FmtStatus status);
 nva_FmtStatus nva_uint(unsigned int uvalue, nva_FmtStatus status);
 nva_FmtStatus nva_ptr(const void* ptr, nva_FmtStatus status);
 nva_FmtStatus nva_char(char ch, nva_FmtStatus status);
 nva_FmtStatus nva_str(const char* str, nva_FmtStatus status);
+
+NVA_EXTERN_C_END
+
+#ifndef __cplusplus
 
 #if (__STDC_VERSION__ > 201100L)
 
@@ -90,8 +101,14 @@ nva_FmtStatus nva_str(const char* str, nva_FmtStatus status);
 
 #endif /* (__STDC_VERSION__ > 201100L) */
 
-nva_ErrorCode nva_format(char* NVA_RESTRICT dest, const char* NVA_RESTRICT format, nva_FmtStatus status);
+#else  /* !__cplusplus */
 
-NVA_EXTERN_C_END
+#include "nva/private/cpp_api/cpp_api.hpp"
+
+#endif /* !__cplusplus */
+
+/**
+ * @}
+ */
 
 #endif /* !NVA_FORMAT_CDECL_H */
