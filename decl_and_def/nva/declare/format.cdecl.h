@@ -96,8 +96,7 @@ NVA_EXTERN_C_END
     _Generic((value),                           \
         int: nva_int((value), (obj)),           \
         unsigned int: nva_uint((value), (obj)), \
-        char: nva_char((value), (obj)),         \
-        const char*: nva_str((value), (obj)))
+        char: nva_char((value), (obj)))
 
 #endif /* (__STDC_VERSION__ > 201100L) */
 
