@@ -182,6 +182,7 @@ static nva_ErrorCode nva_processInteger(char* const NVA_RESTRICT dest,
     unsigned char i = 0U, j;
     unsigned int width_of_num;
     nva_NumToStringAttr num_to_string_attr = {.base = 10, .upper_case = NVA_FALSE};
+    unsigned char center_left, center_right;
 
     if (style->flag.align == NVA_FMT_FLG_ALIGN_DEFAULT) {
         style->flag.align = NVA_FMT_FLG_ALIGN_RIGHT;
@@ -275,6 +276,29 @@ static nva_ErrorCode nva_processInteger(char* const NVA_RESTRICT dest,
         else {
             i += width_of_num;
         }
+        break;
+
+    case NVA_FMT_FLG_ALIGN_CENTER:
+        if ((signed int)width_of_num < style->width) {
+            center_right = (style->width - (signed int)width_of_num + 1) / 2;
+            center_left = style->width - (signed int)width_of_num - center_right;
+
+            nva_memmove(dest + i + center_left, dest + i, width_of_num);
+
+            for (j = 0; j < center_left; ++j) {
+                dest[i++] = style->filler;
+            }
+
+            i += width_of_num;
+
+            for (j = 0; j < center_right; ++j) {
+                dest[i++] = style->filler;
+            }
+        }
+        else {
+            i += width_of_num;
+        }
+        break;
 
     default:
         break;
