@@ -195,7 +195,7 @@ NVA_STATIC_INLINE void* nva_memcpy(void* NVA_RESTRICT dest, /* NOLINT */
 #endif
 }
 
-void* nva_memmove(void* dest, const void* src, NVA_SIZE_T n) /* NOLINT */
+NVA_STATIC_INLINE void* nva_memmove(void* dest, const void* src, NVA_SIZE_T n) /* NOLINT */
 {
 #if (NVA_USE_STD_STRING)
     return memmove(dest, src, n);
