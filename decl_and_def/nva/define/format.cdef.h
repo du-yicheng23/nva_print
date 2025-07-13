@@ -179,7 +179,7 @@ static nva_ErrorCode nva_processInteger(char* const NVA_RESTRICT dest,
                                         const nva_StackDataInfo* const NVA_RESTRICT data_info,
                                         unsigned int* width_of_process)
 {
-    unsigned char i = 0U;
+    unsigned char i = 0U, j;
     unsigned int width_of_num;
     nva_NumToStringAttr num_to_string_attr = {.base = 10, .upper_case = NVA_FALSE};
 
@@ -252,14 +252,29 @@ static nva_ErrorCode nva_processInteger(char* const NVA_RESTRICT dest,
     else {
         nva_uitoa(NVA_STACK_GET_INTEGER(*data_info), dest + i, &num_to_string_attr, &width_of_num);
     }
-    i += width_of_num;
 
     switch (style->flag.align) {
     case NVA_FMT_FLG_ALIGN_LEFT:
+        i += width_of_num;
+
         for (; i < style->width; ++i) {
             dest[i] = style->filler;
         }
         break;
+
+    case NVA_FMT_FLG_ALIGN_RIGHT:
+        if ((signed int)width_of_num < style->width) {
+            nva_memmove(dest + i + (style->width - (signed int)width_of_num), dest + i, width_of_num);
+
+            for (j = 0; j < (style->width - width_of_num); ++j) {
+                dest[i + j] = style->filler;
+            }
+
+            i += style->width;
+        }
+        else {
+            i += width_of_num;
+        }
 
     default:
         break;
