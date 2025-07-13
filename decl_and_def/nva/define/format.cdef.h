@@ -65,6 +65,10 @@ static nva_Stack nva_fmt_stack; /* declare */
      (ch) == 's' || (ch) == 'x' || (ch) == 'X')
 
 static nva_ErrorCode nva_formatProcess(char* NVA_RESTRICT dest, const char* NVA_RESTRICT format);
+static void nva_processAlign(char* NVA_RESTRICT dest,
+                             const nva_FormatStyle* NVA_RESTRICT style,
+                             unsigned int width_of_str,
+                             unsigned int* width_of_process);
 static nva_ErrorCode nva_processInteger(char* NVA_RESTRICT dest,
                                         nva_FormatStyle* NVA_RESTRICT style,
                                         const nva_StackDataInfo* NVA_RESTRICT data_info,
@@ -174,15 +178,75 @@ nva_ErrorCode nva_format(char* NVA_RESTRICT dest, /* NOLINT */
     return error_code;
 }
 
+static void nva_processAlign(char* const NVA_RESTRICT dest,
+                             const nva_FormatStyle* const NVA_RESTRICT style,
+                             const unsigned int width_of_str,
+                             unsigned int* const width_of_process)
+{
+    unsigned int i = 0U, j;
+    unsigned int center_left, center_right;
+
+    switch (style->flag.align) {
+    case NVA_FMT_FLG_ALIGN_LEFT:
+        i += width_of_str;
+
+        for (; (signed int)i < style->width; ++i) {
+            dest[i] = style->filler;
+        }
+        break;
+
+    case NVA_FMT_FLG_ALIGN_RIGHT:
+        if ((signed int)width_of_str < style->width) {
+            nva_memmove(dest + (style->width - (signed int)width_of_str), dest + i, width_of_str);
+
+            for (j = 0; j < (style->width - width_of_str); ++j) {
+                dest[i + j] = style->filler;
+            }
+
+            i += style->width;
+        }
+        else {
+            i += width_of_str;
+        }
+        break;
+
+    case NVA_FMT_FLG_ALIGN_CENTER:
+        if ((signed int)width_of_str < style->width) {
+            center_right = (style->width - (signed int)width_of_str + 1) / 2;
+            center_left = style->width - (signed int)width_of_str - center_right;
+
+            nva_memmove(dest + center_left, dest + i, width_of_str);
+
+            for (j = 0; j < center_left; ++j) {
+                dest[i++] = style->filler;
+            }
+
+            i += width_of_str;
+
+            for (j = 0; j < center_right; ++j) {
+                dest[i++] = style->filler;
+            }
+        }
+        else {
+            i += width_of_str;
+        }
+        break;
+
+    default:
+        break;
+    }
+
+    *width_of_process = i;
+}
+
 static nva_ErrorCode nva_processInteger(char* const NVA_RESTRICT dest,
                                         nva_FormatStyle* const NVA_RESTRICT style,
                                         const nva_StackDataInfo* const NVA_RESTRICT data_info,
-                                        unsigned int* width_of_process)
+                                        unsigned int* const width_of_process)
 {
-    unsigned char i = 0U, j;
-    unsigned int width_of_num;
+    unsigned char i = 0U;
+    unsigned int width_of_num, width_of_align_process;
     nva_NumToStringAttr num_to_string_attr = {.base = 10, .upper_case = NVA_FALSE};
-    unsigned char center_left, center_right;
 
     if (style->flag.align == NVA_FMT_FLG_ALIGN_DEFAULT) {
         style->flag.align = NVA_FMT_FLG_ALIGN_RIGHT;
@@ -254,55 +318,8 @@ static nva_ErrorCode nva_processInteger(char* const NVA_RESTRICT dest,
         nva_uitoa(NVA_STACK_GET_INTEGER(*data_info), dest + i, &num_to_string_attr, &width_of_num);
     }
 
-    switch (style->flag.align) {
-    case NVA_FMT_FLG_ALIGN_LEFT:
-        i += width_of_num;
-
-        for (; i < style->width; ++i) {
-            dest[i] = style->filler;
-        }
-        break;
-
-    case NVA_FMT_FLG_ALIGN_RIGHT:
-        if ((signed int)width_of_num < style->width) {
-            nva_memmove(dest + i + (style->width - (signed int)width_of_num), dest + i, width_of_num);
-
-            for (j = 0; j < (style->width - width_of_num); ++j) {
-                dest[i + j] = style->filler;
-            }
-
-            i += style->width;
-        }
-        else {
-            i += width_of_num;
-        }
-        break;
-
-    case NVA_FMT_FLG_ALIGN_CENTER:
-        if ((signed int)width_of_num < style->width) {
-            center_right = (style->width - (signed int)width_of_num + 1) / 2;
-            center_left = style->width - (signed int)width_of_num - center_right;
-
-            nva_memmove(dest + i + center_left, dest + i, width_of_num);
-
-            for (j = 0; j < center_left; ++j) {
-                dest[i++] = style->filler;
-            }
-
-            i += width_of_num;
-
-            for (j = 0; j < center_right; ++j) {
-                dest[i++] = style->filler;
-            }
-        }
-        else {
-            i += width_of_num;
-        }
-        break;
-
-    default:
-        break;
-    }
+    nva_processAlign(dest + i, style, width_of_num, &width_of_align_process);
+    i += width_of_align_process;
 
     *width_of_process = i;
 
