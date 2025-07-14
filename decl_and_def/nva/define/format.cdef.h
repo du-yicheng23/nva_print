@@ -22,6 +22,12 @@ NVA_EXTERN_C_BEGIN
 typedef union nva_StackData {
     NVA_SIZE_T generic_v;
 
+    signed char schar_v;
+    unsigned char uchar_v;
+
+    short short_v;
+    unsigned short ushort_v;
+
     int int_v;
     unsigned int uint_v;
 
@@ -44,14 +50,24 @@ static nva_Stack nva_fmt_stack; /* declare */
 /* clang-format off */
 
 /**
- * 根据类型ID获得栈的整数类型数据
+ * 根据类型ID获得栈的有符号整数类型数据
  * @param data_info 栈数据的信息（取结构体 nva_StackDataInfo 的变量）
  */
-#define NVA_STACK_GET_INTEGER(data_info)                                                                \
-           (((nva_TypeId)((data_info).type_id)) == NVA_TYPEID_SINT ? (((data_info).stack_data)->int_v)  \
-         : (((nva_TypeId)((data_info).type_id)) == NVA_TYPEID_UINT ? (((data_info).stack_data)->uint_v) \
-         : (((nva_TypeId)((data_info).type_id)) == NVA_TYPEID_CHAR ? (((data_info).stack_data)->char_v) \
-         : 0)))
+#define NVA_STACK_GET_SINTEGER(data_info)                                                             \
+      (((nva_TypeId)((data_info).type_id)) == NVA_TYPEID_SINT ? (((data_info).stack_data)->int_v)     \
+    : (((nva_TypeId)((data_info).type_id)) == NVA_TYPEID_SCHAR ? (((data_info).stack_data)->schar_v)  \
+    : (((nva_TypeId)((data_info).type_id)) == NVA_TYPEID_SSHORT ? (((data_info).stack_data)->short_v) \
+    : 0)))
+
+/**
+ * 根据类型ID获得栈的无符号整数类型数据
+ * @param data_info 栈数据的信息（取结构体 nva_StackDataInfo 的变量）
+ */
+#define NVA_STACK_GET_UINTEGER(data_info)                                                              \
+      (((nva_TypeId)((data_info).type_id)) == NVA_TYPEID_UINT ? (((data_info).stack_data)->uint_v)     \
+    : (((nva_TypeId)((data_info).type_id)) == NVA_TYPEID_UCHAR ? (((data_info).stack_data)->uchar_v)   \
+    : (((nva_TypeId)((data_info).type_id)) == NVA_TYPEID_USHORT ? (((data_info).stack_data)->ushort_v) \
+    : 0)))
 
 /* clang-format on */
 
@@ -79,6 +95,58 @@ static void nva_processInteger(char* NVA_RESTRICT dest,
  * @brief 用于“传参”的函数
  * @{
  */
+
+nva_FmtStatus nva_schar(const signed char value, const nva_FmtStatus status) /* NOLINT */
+{
+    if (status.status != NVA_START.status) {
+        return NVA_ERROR;
+    }
+
+    if (nva_stackPush(&nva_fmt_stack, &value, NVA_TYPEID_SCHAR) == NVA_SUCCESS) {
+        return NVA_START;
+    }
+
+    return NVA_ERROR;
+}
+
+nva_FmtStatus nva_uchar(const unsigned char uvalue, const nva_FmtStatus status) /* NOLINT */
+{
+    if (status.status != NVA_START.status) {
+        return NVA_ERROR;
+    }
+
+    if (nva_stackPush(&nva_fmt_stack, &uvalue, NVA_TYPEID_UCHAR) == NVA_SUCCESS) {
+        return NVA_START;
+    }
+
+    return NVA_ERROR;
+}
+
+nva_FmtStatus nva_short(const signed short value, const nva_FmtStatus status) /* NOLINT */
+{
+    if (status.status != NVA_START.status) {
+        return NVA_ERROR;
+    }
+
+    if (nva_stackPush(&nva_fmt_stack, &value, NVA_TYPEID_SSHORT) == NVA_SUCCESS) {
+        return NVA_START;
+    }
+
+    return NVA_ERROR;
+}
+
+nva_FmtStatus nva_ushort(const unsigned short uvalue, const nva_FmtStatus status) /* NOLINT */
+{
+    if (status.status != NVA_START.status) {
+        return NVA_ERROR;
+    }
+
+    if (nva_stackPush(&nva_fmt_stack, &uvalue, NVA_TYPEID_USHORT) == NVA_SUCCESS) {
+        return NVA_START;
+    }
+
+    return NVA_ERROR;
+}
 
 nva_FmtStatus nva_int(const int value, const nva_FmtStatus status) /* NOLINT */
 {
@@ -264,6 +332,9 @@ static void nva_processInteger(char* const NVA_RESTRICT dest,
 
     if (style->flag.align == NVA_FMT_FLG_ALIGN_DEFAULT) {
         style->flag.align = NVA_FMT_FLG_ALIGN_RIGHT;
+        if (style->flag.zero) {
+            style->filler = '0';
+        }
     }
 
     if (style->type == '\0') {
@@ -296,20 +367,38 @@ static void nva_processInteger(char* const NVA_RESTRICT dest,
         num_to_string_attr.upper_case = NVA_TRUE;
     }
 
+    switch (style->flag.sign) {
+    case NVA_FMT_FLG_SIGN_EXPLICITLY_POSITIVE:
+        if (NVA_IS_UNSIGNED(data_info->type_id) || NVA_STACK_GET_SINTEGER(*data_info) >= 0) {
+            dest[i++] = '+';
+        }
+        break;
+
+    case NVA_FMT_FLG_SIGN_SPACE_POSITIVE:
+        if (NVA_IS_UNSIGNED(data_info->type_id) || NVA_STACK_GET_SINTEGER(*data_info) >= 0) {
+            dest[i++] = ' ';
+        }
+        break;
+
+    case NVA_FMT_FLG_SIGN_NEGATIVE_ONLY:
+    default:
+        break;
+    }
+
     if (style->flag.prefix) {
         switch (style->type) {
         case 'b':
-            nva_strcat(dest, "0b");
+            nva_strcat(dest + i, "0b");
             goto end_of_style_check;
         case 'B':
-            nva_strcat(dest, "0B");
+            nva_strcat(dest + i, "0B");
             goto end_of_style_check;
 
         case 'x':
-            nva_strcat(dest, "0x");
+            nva_strcat(dest + i, "0x");
             goto end_of_style_check;
         case 'X':
-            nva_strcat(dest, "0X");
+            nva_strcat(dest + i, "0X");
             goto end_of_style_check;
 
         end_of_style_check:
@@ -326,16 +415,15 @@ static void nva_processInteger(char* const NVA_RESTRICT dest,
         width_of_num = 1U;
     }
     else if (NVA_IS_SIGNED(data_info->type_id)) {
-        nva_itoa(NVA_STACK_GET_INTEGER(*data_info), dest + i, &num_to_string_attr, &width_of_num);
+        nva_itoa(NVA_STACK_GET_SINTEGER(*data_info), dest + i, &num_to_string_attr, &width_of_num);
     }
     else {
-        nva_uitoa(NVA_STACK_GET_INTEGER(*data_info), dest + i, &num_to_string_attr, &width_of_num);
+        nva_uitoa(NVA_STACK_GET_UINTEGER(*data_info), dest + i, &num_to_string_attr, &width_of_num);
     }
 
-    nva_processAlign(dest + i, style, width_of_num, &width_of_align_process);
-    i += width_of_align_process;
+    nva_processAlign(dest, style, width_of_num + i, &width_of_align_process);
 
-    *width_of_process = i;
+    *width_of_process = width_of_align_process;
 }
 
 static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char* const NVA_RESTRICT format)
@@ -536,7 +624,9 @@ static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char
                 if (format[j] >= '0' && format[j] <= '9') {
                     do {
                         if (format[j] == '0') {
-                            style.flag.zero = 1U;
+                            if (style.flag.align != NVA_FMT_FLG_ALIGN_DEFAULT) {
+                                style.flag.zero = 1U;
+                            }
                             ++j;
 
                             if (!(format[j] >= '0' && format[j] <= '9')) {
