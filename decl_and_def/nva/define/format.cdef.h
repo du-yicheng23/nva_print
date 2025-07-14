@@ -91,6 +91,9 @@ static unsigned int nva_processInteger(char* NVA_RESTRICT dest,
 static unsigned int nva_processChar(char* NVA_RESTRICT dest,
                                     nva_FormatStyle* NVA_RESTRICT style,
                                     const nva_StackDataInfo* NVA_RESTRICT data_info);
+static unsigned int nva_processStr(char* NVA_RESTRICT dest,
+                                   nva_FormatStyle* NVA_RESTRICT style,
+                                   const nva_StackDataInfo* NVA_RESTRICT data_info);
 
 /**
  * @defgroup nva_ParamFunctions
@@ -470,6 +473,32 @@ static unsigned int nva_processChar(char* const NVA_RESTRICT dest,
     return nva_processAlign(dest, style, 1);
 }
 
+/**
+ * 处理字符串
+ * @param dest 承接格式化字符串的内存
+ * @param style 格式化效果
+ * @param data_info 栈数据的信息
+ * @return 处理完成后，这一段的宽度
+ */
+static unsigned int nva_processStr(char* const NVA_RESTRICT dest,
+                                   nva_FormatStyle* const NVA_RESTRICT style,
+                                   const nva_StackDataInfo* const NVA_RESTRICT data_info)
+{
+    unsigned int i;
+    const char* const src_str = data_info->stack_data->str_v;
+
+    if (style->flag.align == NVA_FMT_FLG_ALIGN_DEFAULT) {
+        style->flag.align = NVA_FMT_FLG_ALIGN_LEFT;
+    }
+
+    for (i = 0; src_str[i] != '\0'; ++i) {
+        dest[i] = src_str[i];
+    }
+    dest[i] = '\0';
+
+    return nva_processAlign(dest, style, i);
+}
+
 static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char* const NVA_RESTRICT format)
 {
     NVA_SIZE_T i; /* for dest */
@@ -562,6 +591,7 @@ static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char
                     break;
 
                 case NVA_TYPEID_STR:
+                    i += nva_processStr(dest + i, &style, &current_phase_data_info);
                     break;
 
                 default:
