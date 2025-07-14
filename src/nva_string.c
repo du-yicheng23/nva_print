@@ -6,16 +6,7 @@
  */
 
 #include "nva/defines.h"
-
-#if (!NVA_INLINE_MODE)
-
 #include "nva/define/string.cdef.h"
-
-#else
-
-#include "nva/declare/string.cdecl.h"
-
-#endif
 
 const char nva_itoa_str_table[17] = "0123456789abcdef";       /**< 数字转字符的索引表 */
 const char nva_itoa_str_table_upper[17] = "0123456789ABCDEF"; /**< 数字转字符的大写索引表 */
@@ -534,18 +525,22 @@ char* nva_sizetoa(const NVA_SIZE_T uvalue,
  * @param value 浮点类型数值（float 与 double 类型均可）
  * @param precision 精度（保留小数点后的位数，会自动舍入）
  * @param str 字符串
- * @return str
+ * @return 转化后的 str 的长度
  */
-char* nva_gcvt(double value, const unsigned char precision, char* const NVA_RESTRICT str)
+unsigned int nva_gcvt(double value, const unsigned char precision, char* const NVA_RESTRICT str)
 {
-#if (NVA__USE_GCVT_FUNC)
-    return gcvt(value, precision, str);
-#else
     NVA_SIZE_T integer;
     NVA_SIZE_T decimal;
     unsigned char i = 0U, j, k;
     char roundoff_value;
     NVA_BOOL is_decimal_zero = NVA_FALSE;
+
+#if (NVA__USE_INF_AND_NAN)
+    if (isinf(value)) {
+    }
+    else if (isnan(value)) {
+    }
+#endif
 
     if (value < 0.0) {
         str[i++] = '-';
@@ -659,6 +654,5 @@ char* nva_gcvt(double value, const unsigned char precision, char* const NVA_REST
         str[i - 1 + k - j] = roundoff_value;
     }
 
-    return str;
-#endif
+    return i;
 }

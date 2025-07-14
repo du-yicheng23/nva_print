@@ -23,18 +23,18 @@
 #define NVA__USE_STD_STRING NVA_FALSE
 
 #endif /* !NVA_NO_STRING_H */
+#define NVA_SUPPORT_INF_AND_NAN
+#ifdef NVA_SUPPORT_INF_AND_NAN
 
-#ifdef NVA_HAVE_GCVT_FUNC
+#include "math.h"
 
-#include <stdlib.h>
+#define NVA__USE_INF_AND_NAN NVA_TRUE
 
-#define NVA__USE_GCVT_FUNC NVA_TRUE
+#else
 
-#else /* NVA_NO_STDLIB_H */
+#define NVA__USE_INF_AND_NAN NVA_FALSE
 
-#define NVA__USE_GCVT_FUNC NVA_FALSE
-
-#endif /* NVA_HAVE_GCVT_FUNC */
+#endif
 
 NVA_EXTERN_C_BEGIN
 
