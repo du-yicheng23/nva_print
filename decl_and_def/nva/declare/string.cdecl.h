@@ -33,8 +33,12 @@ int nva_strcmp(const char* lhs, const char* rhs);
 
 #endif /* (!NVA_INLINE_MODE) */
 
+#if (!(NVA__USE_STD_STRING && NVA_INLINE_MODE))
+
 void* nva_memcpy(void* NVA_RESTRICT dest, const void* NVA_RESTRICT src, NVA_SIZE_T n);
 void* nva_memmove(void* dest, const void* src, NVA_SIZE_T n);
+
+#endif /* (!(NVA__USE_STD_STRING && NVA_INLINE_MODE)) */
 
 int nva_atoi(const char* NVA_RESTRICT str, unsigned int* width_of_num);
 

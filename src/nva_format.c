@@ -135,6 +135,58 @@ nva_FmtStatus nva_uint(const unsigned int uvalue, const nva_FmtStatus status)
     return NVA_ERROR;
 }
 
+nva_FmtStatus nva_long(const long value, const nva_FmtStatus status)
+{
+    if (status.status != NVA_START.status) {
+        return NVA_ERROR;
+    }
+
+    if (nva_stackPush(&nva__fmt_stack, &value, NVA_TYPEID_SLONG) == NVA_SUCCESS) {
+        return NVA_START;
+    }
+
+    return NVA_ERROR;
+}
+
+nva_FmtStatus nva_ulong(const unsigned long uvalue, const nva_FmtStatus status)
+{
+    if (status.status != NVA_START.status) {
+        return NVA_ERROR;
+    }
+
+    if (nva_stackPush(&nva__fmt_stack, &uvalue, NVA_TYPEID_ULONG) == NVA_SUCCESS) {
+        return NVA_START;
+    }
+
+    return NVA_ERROR;
+}
+
+nva_FmtStatus nva_llong(const NVA_LONG_LONG value, const nva_FmtStatus status)
+{
+    if (status.status != NVA_START.status) {
+        return NVA_ERROR;
+    }
+
+    if (nva_stackPush(&nva__fmt_stack, &value, NVA_TYPEID_SLLONG) == NVA_SUCCESS) {
+        return NVA_START;
+    }
+
+    return NVA_ERROR;
+}
+
+nva_FmtStatus nva_ullong(const unsigned NVA_LONG_LONG uvalue, const nva_FmtStatus status)
+{
+    if (status.status != NVA_START.status) {
+        return NVA_ERROR;
+    }
+
+    if (nva_stackPush(&nva__fmt_stack, &uvalue, NVA_TYPEID_ULLONG) == NVA_SUCCESS) {
+        return NVA_START;
+    }
+
+    return NVA_ERROR;
+}
+
 nva_FmtStatus nva_ptr(const void* ptr, const nva_FmtStatus status)
 {
     if (status.status != NVA_START.status) {

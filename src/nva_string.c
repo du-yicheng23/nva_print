@@ -191,6 +191,8 @@ static NVA__DECL_UINT_TO_STR(nva__ulong_type);
 static NVA__DECL_UINT_TO_STR(nva__ullong_type);
 static NVA__DECL_UINT_TO_STR(nva__size_type);
 
+#if (!(NVA__USE_STD_STRING && NVA_INLINE_MODE))
+
 /**
  * 内存拷贝
  * @param dest 承接的内存区域
@@ -198,11 +200,9 @@ static NVA__DECL_UINT_TO_STR(nva__size_type);
  * @param n 要拷贝的字节数
  * @return 拷贝后的 dest
  */
-void* nva_memcpy(void* NVA_RESTRICT dest, /* NOLINT */
-                 const void* NVA_RESTRICT src,
-                 NVA_SIZE_T n)
+void* nva_memcpy(void* NVA_RESTRICT dest, const void* NVA_RESTRICT src, NVA_SIZE_T n)
 {
-#if (NVA_USE_STD_STRING)
+#if (NVA__USE_STD_STRING)
     return memcpy(dest, src, n);
 #else
     void* const dest_store = dest;
@@ -257,9 +257,16 @@ void* nva_memcpy(void* NVA_RESTRICT dest, /* NOLINT */
 #endif
 }
 
+/**
+ * 内存移动
+ * @param dest 承接的内存区域
+ * @param src 被拷贝的内存区域
+ * @param n 要拷贝的字节数
+ * @return 移动后的 dest
+ */
 void* nva_memmove(void* dest, const void* src, NVA_SIZE_T n) /* NOLINT */
 {
-#if (NVA_USE_STD_STRING)
+#if (NVA__USE_STD_STRING)
     return memmove(dest, src, n);
 #else
     void* const dest_store = dest;
@@ -357,6 +364,8 @@ void* nva_memmove(void* dest, const void* src, NVA_SIZE_T n) /* NOLINT */
 #endif
 }
 
+#endif /* (!(NVA__USE_STD_STRING && NVA_INLINE_MODE)) */
+
 /**
  * 整数字符串转整数
  * @note 这个函数遇到非数字字符（第一个 '-' 除外）之后就会立刻停止。例如 "-123a" 转化后为 -123
@@ -416,7 +425,7 @@ static NVA__DEF_UINT_TO_STR(nva__size_type);
  * @param[out] width_of_num 转化后的数字的位数（如果是负数，负号也包含在宽度内）
  * @return str
  */
-char* nva_itoa(const int value, /* NOLINT */
+char* nva_itoa(const int value,
                char* const NVA_RESTRICT str,
                const nva_NumToStringAttr* const NVA_RESTRICT attr,
                unsigned int* const width_of_num)
@@ -432,7 +441,7 @@ char* nva_itoa(const int value, /* NOLINT */
  * @param[out] width_of_num 转化后的数字的位数（如果是负数，负号也包含在宽度内）
  * @return str
  */
-char* nva_uitoa(unsigned int uvalue, /* NOLINT */
+char* nva_uitoa(unsigned int uvalue,
                 char* const NVA_RESTRICT str,
                 const nva_NumToStringAttr* const NVA_RESTRICT attr,
                 unsigned int* const width_of_num)
@@ -448,7 +457,7 @@ char* nva_uitoa(unsigned int uvalue, /* NOLINT */
  * @param[out] width_of_num 转化后的数字的位数（如果是负数，负号也包含在宽度内）
  * @return str
  */
-char* nva_ltoa(const long value, /* NOLINT */
+char* nva_ltoa(const long value,
                char* const NVA_RESTRICT str,
                const nva_NumToStringAttr* const NVA_RESTRICT attr,
                unsigned int* const width_of_num)
@@ -464,7 +473,7 @@ char* nva_ltoa(const long value, /* NOLINT */
  * @param[out] width_of_num 转化后的数字的位数（如果是负数，负号也包含在宽度内）
  * @return str
  */
-char* nva_ultoa(const unsigned long uvalue, /* NOLINT */
+char* nva_ultoa(const unsigned long uvalue,
                 char* const NVA_RESTRICT str,
                 const nva_NumToStringAttr* const NVA_RESTRICT attr,
                 unsigned int* const width_of_num)
@@ -480,7 +489,7 @@ char* nva_ultoa(const unsigned long uvalue, /* NOLINT */
  * @param[out] width_of_num 转化后的数字的位数（如果是负数，负号也包含在宽度内）
  * @return str
  */
-char* nva_lltoa(const NVA_LONG_LONG value, /* NOLINT */
+char* nva_lltoa(const NVA_LONG_LONG value,
                 char* const NVA_RESTRICT str,
                 const nva_NumToStringAttr* const NVA_RESTRICT attr,
                 unsigned int* const width_of_num)
@@ -496,7 +505,7 @@ char* nva_lltoa(const NVA_LONG_LONG value, /* NOLINT */
  * @param[out] width_of_num 转化后的数字的位数（如果是负数，负号也包含在宽度内）
  * @return str
  */
-char* nva_ulltoa(const unsigned NVA_LONG_LONG uvalue, /* NOLINT */
+char* nva_ulltoa(const unsigned NVA_LONG_LONG uvalue,
                  char* const NVA_RESTRICT str,
                  const nva_NumToStringAttr* const NVA_RESTRICT attr,
                  unsigned int* const width_of_num)
@@ -512,7 +521,7 @@ char* nva_ulltoa(const unsigned NVA_LONG_LONG uvalue, /* NOLINT */
  * @param[out] width_of_num 转化后的数字的位数（如果是负数，负号也包含在宽度内）
  * @return str
  */
-char* nva_sizetoa(const NVA_SIZE_T uvalue, /* NOLINT */
+char* nva_sizetoa(const NVA_SIZE_T uvalue,
                   char* const NVA_RESTRICT str,
                   const nva_NumToStringAttr* const NVA_RESTRICT attr,
                   unsigned int* const width_of_num)
@@ -527,9 +536,9 @@ char* nva_sizetoa(const NVA_SIZE_T uvalue, /* NOLINT */
  * @param str 字符串
  * @return str
  */
-char* nva_gcvt(double value, const unsigned char precision, char* const NVA_RESTRICT str) /* NOLINT */
+char* nva_gcvt(double value, const unsigned char precision, char* const NVA_RESTRICT str)
 {
-#if (NVA_USE_GCVT_FUNC)
+#if (NVA__USE_GCVT_FUNC)
     return gcvt(value, precision, str);
 #else
     NVA_SIZE_T integer;

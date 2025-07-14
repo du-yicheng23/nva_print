@@ -16,11 +16,11 @@
 
 #include <string.h>
 
-#define NVA_USE_STD_STRING NVA_TRUE
+#define NVA__USE_STD_STRING NVA_TRUE
 
 #else /* !NVA_NO_STRING_H */
 
-#define NVA_USE_STD_STRING NVA_FALSE
+#define NVA__USE_STD_STRING NVA_FALSE
 
 #endif /* !NVA_NO_STRING_H */
 
@@ -28,11 +28,11 @@
 
 #include <stdlib.h>
 
-#define NVA_USE_GCVT_FUNC NVA_TRUE
+#define NVA__USE_GCVT_FUNC NVA_TRUE
 
 #else /* NVA_NO_STDLIB_H */
 
-#define NVA_USE_GCVT_FUNC NVA_FALSE
+#define NVA__USE_GCVT_FUNC NVA_FALSE
 
 #endif /* NVA_HAVE_GCVT_FUNC */
 
@@ -45,7 +45,7 @@ NVA_EXTERN_C_BEGIN
  */
 NVA_STATIC_INLINE NVA_SIZE_T nva_strlen(const char* const str) /* NOLINT */
 {
-#if (NVA_USE_STD_STRING)
+#if (NVA__USE_STD_STRING)
     return strlen(str);
 #else
     NVA_SIZE_T len;
@@ -65,7 +65,7 @@ NVA_STATIC_INLINE NVA_SIZE_T nva_strlen(const char* const str) /* NOLINT */
  */
 NVA_STATIC_INLINE char* nva_strcat(char* const NVA_RESTRICT dest, const char* const NVA_RESTRICT src) /* NOLINT */
 {
-#if (NVA_USE_STD_STRING)
+#if (NVA__USE_STD_STRING)
     return strcat(dest, src);
 #else
     NVA_SIZE_T dest_index, src_index;
@@ -91,7 +91,7 @@ NVA_STATIC_INLINE char* nva_strcat(char* const NVA_RESTRICT dest, const char* co
  */
 NVA_STATIC_INLINE char* nva_strcpy(char* const NVA_RESTRICT dest, const char* const NVA_RESTRICT src) /* NOLINT */
 {
-#if (NVA_USE_STD_STRING)
+#if (NVA__USE_STD_STRING)
     return strcpy(dest, src);
 #else
     NVA_SIZE_T i;
@@ -114,7 +114,7 @@ NVA_STATIC_INLINE char* nva_strcpy(char* const NVA_RESTRICT dest, const char* co
  */
 NVA_STATIC_INLINE int nva_strcmp(const char* const lhs, const char* const rhs) /* NOLINT */
 {
-#if (NVA_USE_STD_STRING)
+#if (NVA__USE_STD_STRING)
     return strcmp(lhs, rhs);
 #else
     NVA_SIZE_T i;
@@ -128,6 +128,36 @@ NVA_STATIC_INLINE int nva_strcmp(const char* const lhs, const char* const rhs) /
     return (signed int)lhs[i] - (signed int)rhs[i];
 #endif
 }
+
+#if (NVA__USE_STD_STRING && NVA_INLINE_MODE)
+
+/**
+ * 内存拷贝
+ * @param dest 承接的内存区域
+ * @param src 被拷贝的内存区域
+ * @param n 要拷贝的字节数
+ * @return 拷贝后的 dest
+ */
+NVA_STATIC_INLINE void* nva_memcpy(void* NVA_RESTRICT dest, /* NOLINT */
+                                   const void* NVA_RESTRICT src,
+                                   NVA_SIZE_T n)
+{
+    return memcpy(dest, src, n);
+}
+
+/**
+ * 内存移动
+ * @param dest 承接的内存区域
+ * @param src 被拷贝的内存区域
+ * @param n 要拷贝的字节数
+ * @return 移动后的 dest
+ */
+NVA_STATIC_INLINE void* nva_memmove(void* dest, const void* src, NVA_SIZE_T n) /* NOLINT */
+{
+    return memmove(dest, src, n);
+}
+
+#endif
 
 NVA_EXTERN_C_END
 
