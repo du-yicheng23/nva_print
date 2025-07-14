@@ -90,31 +90,10 @@ nva_FmtStatus nva_ptr(const void* ptr, nva_FmtStatus status);
 nva_FmtStatus nva_char(char ch, nva_FmtStatus status);
 nva_FmtStatus nva_str(const char* str, nva_FmtStatus status);
 
-NVA_EXTERN_C_END
-
-#ifndef __cplusplus
-
-#if (__STDC_VERSION__ > 201100L)
-
-#define nva_add(value, obj)                         \
-    _Generic((value),                               \
-        signed char: nva_char((value), (obj)),      \
-        unsigned char: nva_uchar((value), (obj)),   \
-        short: nva_short((value), (obj)),           \
-        unsigned short: nva_ushort((value), (obj)), \
-        int: nva_int((value), (obj)),               \
-        unsigned int: nva_uint((value), (obj)))
-
-#endif /* (__STDC_VERSION__ > 201100L) */
-
-#else  /* !__cplusplus */
-
-#include "nva/private/cpp_api/cpp_api.hpp"
-
-#endif /* !__cplusplus */
-
 /**
  * @}
  */
+
+NVA_EXTERN_C_END
 
 #endif /* !NVA_FORMAT_CDECL_H */

@@ -11,14 +11,44 @@
 
 #include "nva/defines.h"
 
-/* #if (NVA_INLINE_MODE)
+#if (NVA_INLINE_MODE)
 
 #include "nva/define/format.cdef.h"
 
-#else */
+#else
 
 #include "nva/declare/format.cdecl.h"
 
-/* #endif */
+#endif
+
+/**
+ * @addtogroup nva_ParamFunctions
+ * @{
+ */
+
+#ifndef __cplusplus
+
+#if (__STDC_VERSION__ > 201100L)
+
+#define nva_add(value, obj)                         \
+    _Generic((value),                               \
+        signed char: nva_char((value), (obj)),      \
+        unsigned char: nva_uchar((value), (obj)),   \
+        short: nva_short((value), (obj)),           \
+        unsigned short: nva_ushort((value), (obj)), \
+        int: nva_int((value), (obj)),               \
+        unsigned int: nva_uint((value), (obj)))
+
+#endif /* (__STDC_VERSION__ > 201100L) */
+
+#else  /* !__cplusplus */
+
+#include "nva/private/cpp_api/cpp_api.hpp"
+
+#endif /* !__cplusplus */
+
+/**
+ * @}
+ */
 
 #endif /* !NVA_FORMAT_H */

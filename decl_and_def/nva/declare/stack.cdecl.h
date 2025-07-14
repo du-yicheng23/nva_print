@@ -93,6 +93,65 @@ typedef struct nva_Stack {
  */
 #define NVA_STACK_INIT_VALUE {0}
 
+/**
+ * 栈的数据
+ */
+typedef union nva_StackData {
+    NVA_SIZE_T generic_v;
+
+    signed char schar_v;
+    unsigned char uchar_v;
+
+    short short_v;
+    unsigned short ushort_v;
+
+    int int_v;
+    unsigned int uint_v;
+
+    long long_v;
+    unsigned long ulong_v;
+
+    NVA_LONG_LONG llong_v;
+    unsigned NVA_LONG_LONG ullong_v;
+
+    void* ptr_v;
+
+    char char_v;
+    const char* str_v;
+} nva_StackData;
+
+/**
+ * 栈数据的信息
+ */
+typedef struct nva_StackDataInfo {
+    nva_StackData* stack_data; /**< 栈原本的数据 */
+    nva_TypeId type_id;        /**< 数据的类型ID */
+} nva_StackDataInfo;
+
+/* clang-format off */
+
+/**
+ * 根据类型ID获得栈的有符号整数类型（不包含长整型与超长整形）数据
+ * @param data_info 栈数据的信息（取结构体 nva_StackDataInfo 的变量）
+ */
+#define NVA_STACK_GET_SINTEGER(data_info)                                                             \
+      (((nva_TypeId)((data_info).type_id)) == NVA_TYPEID_SINT ? (((data_info).stack_data)->int_v)     \
+    : (((nva_TypeId)((data_info).type_id)) == NVA_TYPEID_SCHAR ? (((data_info).stack_data)->schar_v)  \
+    : (((nva_TypeId)((data_info).type_id)) == NVA_TYPEID_SSHORT ? (((data_info).stack_data)->short_v) \
+    : 0)))
+
+/**
+ * 根据类型ID获得栈的无符号整数类型（不包含长整型与超长整形）数据
+ * @param data_info 栈数据的信息（取结构体 nva_StackDataInfo 的变量）
+ */
+#define NVA_STACK_GET_UINTEGER(data_info)                                                              \
+      (((nva_TypeId)((data_info).type_id)) == NVA_TYPEID_UINT ? (((data_info).stack_data)->uint_v)     \
+    : (((nva_TypeId)((data_info).type_id)) == NVA_TYPEID_UCHAR ? (((data_info).stack_data)->uchar_v)   \
+    : (((nva_TypeId)((data_info).type_id)) == NVA_TYPEID_USHORT ? (((data_info).stack_data)->ushort_v) \
+    : 0)))
+
+/* clang-format on */
+
 #if (!NVA_INLINE_MODE)
 nva_ErrorCode nva_stackInit(nva_Stack* NVA_RESTRICT stack);
 nva_ErrorCode nva_stackPush(nva_Stack* NVA_RESTRICT stack, const void* NVA_RESTRICT value, nva_TypeId type_id);
