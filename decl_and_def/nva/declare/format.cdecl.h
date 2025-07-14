@@ -103,8 +103,7 @@ NVA_EXTERN_C_END
         short: nva_short((value), (obj)),           \
         unsigned short: nva_ushort((value), (obj)), \
         int: nva_int((value), (obj)),               \
-        unsigned int: nva_uint((value), (obj)),     \
-        char: nva_char((value), (obj)))
+        unsigned int: nva_uint((value), (obj)))
 
 #endif /* (__STDC_VERSION__ > 201100L) */
 
