@@ -54,29 +54,30 @@ int nva_atoi(const char* NVA_RESTRICT str, unsigned int* width_of_num);
 /**
  * 定义 整型转字符串的函数
  * @tparam Type 整型的类型
+ * @tparam UType 这个整型对应的无符号整型的类型
  * @param value 待转换的整数
  * @param str 字符串
  * @param attr 转化属性
  * @param[out] width_of_num 转化后的数字的位数（如果是负数，负号也包含在宽度内）
  * @return str
  */
-#define NVA__DEF_INT_TO_STR(Type)                                                                    \
+#define NVA__DEF_INT_TO_STR(Type, UType)                                                             \
     char* nva__itostr_##Type(const Type value, /* NOLINT */                                          \
                              char* const NVA_RESTRICT str,                                           \
                              const nva_NumToStringAttr* const NVA_RESTRICT attr,                     \
                              unsigned int* const width_of_num)                                       \
     {                                                                                                \
-        unsigned Type uvalue;                                                                        \
+        UType uvalue;                                                                                \
         signed char i = 0, j, k;                                                                     \
         char temp; /* 临时变量，用于最后一步逆序 */                                                  \
                                                                                                      \
         /* 获取要转换的整数的绝对值 */                                                               \
         if (value < 0) {                                                                             \
-            uvalue = (unsigned Type)(-value);                                                        \
+            uvalue = (UType)(-value);                                                                \
             str[i++] = '-';                                                                          \
         }                                                                                            \
         else {                                                                                       \
-            uvalue = (unsigned Type)value;                                                           \
+            uvalue = (UType)value;                                                                   \
         }                                                                                            \
                                                                                                      \
         /* 转换部分，注意转换后是逆序的 */                                                           \
@@ -190,7 +191,11 @@ int nva_atoi(const char* NVA_RESTRICT str, unsigned int* width_of_num);
  */
 #define NVA__CALL_UINT_TO_STR(UType) nva__uitostr_##UType
 
+typedef NVA_LONG_LONG nva__llong_type;
+
 typedef unsigned int nva__uint_type;
+typedef unsigned long nva__ulong_type;
+typedef unsigned NVA_LONG_LONG nva__ullong_type;
 typedef NVA_SIZE_T nva__size_type;
 
 char* nva_itoa(int value,
@@ -201,6 +206,24 @@ char* nva_uitoa(unsigned int uvalue,
                 char* NVA_RESTRICT str,
                 const nva_NumToStringAttr* NVA_RESTRICT attr,
                 unsigned int* width_of_num);
+
+char* nva_ltoa(long value,
+               char* NVA_RESTRICT str,
+               const nva_NumToStringAttr* NVA_RESTRICT attr,
+               unsigned int* width_of_num);
+char* nva_ultoa(unsigned long uvalue,
+                char* NVA_RESTRICT str,
+                const nva_NumToStringAttr* NVA_RESTRICT attr,
+                unsigned int* width_of_num);
+
+char* nva_lltoa(NVA_LONG_LONG value,
+                char* NVA_RESTRICT str,
+                const nva_NumToStringAttr* NVA_RESTRICT attr,
+                unsigned int* width_of_num);
+char* nva_ulltoa(unsigned NVA_LONG_LONG uvalue,
+                 char* NVA_RESTRICT str,
+                 const nva_NumToStringAttr* NVA_RESTRICT attr,
+                 unsigned int* width_of_num);
 
 char* nva_sizetoa(NVA_SIZE_T uvalue,
                   char* NVA_RESTRICT str,

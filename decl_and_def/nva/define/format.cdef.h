@@ -31,6 +31,12 @@ typedef union nva_StackData {
     int int_v;
     unsigned int uint_v;
 
+    long long_v;
+    unsigned long ulong_v;
+
+    NVA_LONG_LONG llong_v;
+    unsigned NVA_LONG_LONG ullong_v;
+
     void* ptr_v;
 
     char char_v;
@@ -430,10 +436,30 @@ static unsigned int nva_processInteger(char* const NVA_RESTRICT dest,
         width_of_num = 1U;
     }
     else if (NVA_IS_SIGNED(data_info->type_id)) {
-        nva_itoa(NVA_STACK_GET_SINTEGER(*data_info), dest + i, &num_to_string_attr, &width_of_num);
+        switch (data_info->type_id) {
+        case NVA_TYPEID_SLONG:
+            nva_ltoa(data_info->stack_data->long_v, dest + i, &num_to_string_attr, &width_of_num);
+            break;
+        case NVA_TYPEID_SLLONG:
+            nva_lltoa(data_info->stack_data->llong_v, dest + i, &num_to_string_attr, &width_of_num);
+            break;
+        default:
+            nva_itoa(NVA_STACK_GET_SINTEGER(*data_info), dest + i, &num_to_string_attr, &width_of_num);
+            break;
+        }
     }
     else {
-        nva_uitoa(NVA_STACK_GET_UINTEGER(*data_info), dest + i, &num_to_string_attr, &width_of_num);
+        switch (data_info->type_id) {
+        case NVA_TYPEID_ULONG:
+            nva_ultoa(data_info->stack_data->ulong_v, dest + i, &num_to_string_attr, &width_of_num);
+            break;
+        case NVA_TYPEID_ULLONG:
+            nva_ulltoa(data_info->stack_data->ullong_v, dest + i, &num_to_string_attr, &width_of_num);
+            break;
+        default:
+            nva_uitoa(NVA_STACK_GET_UINTEGER(*data_info), dest + i, &num_to_string_attr, &width_of_num);
+            break;
+        }
     }
 
     if (style->flag.align == NVA_FMT_FLG_ALIGN_DEFAULT) {
@@ -662,6 +688,10 @@ static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char
                 case NVA_TYPEID_USHORT:
                 case NVA_TYPEID_SINT:
                 case NVA_TYPEID_UINT:
+                case NVA_TYPEID_SLONG:
+                case NVA_TYPEID_ULONG:
+                case NVA_TYPEID_SLLONG:
+                case NVA_TYPEID_ULLONG:
                     i += nva_processInteger(dest + i, &style, &current_phase_data_info);
                     break;
 

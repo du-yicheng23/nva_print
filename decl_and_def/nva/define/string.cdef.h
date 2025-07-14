@@ -38,6 +38,15 @@
 
 NVA_EXTERN_C_BEGIN
 
+NVA__DECL_INT_TO_STR(int);
+NVA__DECL_INT_TO_STR(long);
+NVA__DECL_INT_TO_STR(nva__llong_type);
+
+NVA__DECL_UINT_TO_STR(nva__uint_type);
+NVA__DECL_UINT_TO_STR(nva__ulong_type);
+NVA__DECL_UINT_TO_STR(nva__ullong_type);
+NVA__DECL_UINT_TO_STR(nva__size_type);
+
 /**
  * 获取字符串的长度
  * @param str 字符串
@@ -337,7 +346,14 @@ NVA_STATIC_INLINE int nva_atoi(const char* const NVA_RESTRICT str, unsigned int*
     return value;
 }
 
-NVA_STATIC_INLINE NVA__DEF_INT_TO_STR(int);
+NVA_STATIC_INLINE NVA__DEF_INT_TO_STR(int, nva__uint_type);
+NVA_STATIC_INLINE NVA__DEF_INT_TO_STR(long, nva__ulong_type);
+NVA_STATIC_INLINE NVA__DEF_INT_TO_STR(nva__llong_type, nva__ullong_type);
+
+NVA_STATIC_INLINE NVA__DEF_UINT_TO_STR(nva__uint_type);
+NVA_STATIC_INLINE NVA__DEF_UINT_TO_STR(nva__ulong_type);
+NVA_STATIC_INLINE NVA__DEF_UINT_TO_STR(nva__ullong_type);
+NVA_STATIC_INLINE NVA__DEF_UINT_TO_STR(nva__size_type);
 
 /**
  * 整型转字符串
@@ -355,9 +371,6 @@ NVA_STATIC_INLINE char* nva_itoa(const int value, /* NOLINT */
     return NVA__CALL_INT_TO_STR(int)(value, str, attr, width_of_num);
 }
 
-NVA_STATIC_INLINE NVA__DEF_UINT_TO_STR(nva__uint_type);
-NVA_STATIC_INLINE NVA__DEF_UINT_TO_STR(nva__size_type);
-
 /**
  * 无符号整型转字符串
  * @param uvalue 无符号整型数值
@@ -372,6 +385,70 @@ NVA_STATIC_INLINE char* nva_uitoa(unsigned int uvalue, /* NOLINT */
                                   unsigned int* const width_of_num)
 {
     return NVA__CALL_UINT_TO_STR(nva__uint_type)(uvalue, str, attr, width_of_num);
+}
+
+/**
+ * 长整型转字符串
+ * @param value 长整型数值
+ * @param str 字符串
+ * @param attr 转化属性
+ * @param[out] width_of_num 转化后的数字的位数（如果是负数，负号也包含在宽度内）
+ * @return str
+ */
+char* nva_ltoa(const long value, /* NOLINT */
+               char* const NVA_RESTRICT str,
+               const nva_NumToStringAttr* const NVA_RESTRICT attr,
+               unsigned int* const width_of_num)
+{
+    return NVA__CALL_INT_TO_STR(long)(value, str, attr, width_of_num);
+}
+
+/**
+ * 无符号长整型转字符串
+ * @param uvalue 无符号长整型数值
+ * @param str 字符串
+ * @param attr 转化属性
+ * @param[out] width_of_num 转化后的数字的位数（如果是负数，负号也包含在宽度内）
+ * @return str
+ */
+char* nva_ultoa(const unsigned long uvalue, /* NOLINT */
+                char* const NVA_RESTRICT str,
+                const nva_NumToStringAttr* const NVA_RESTRICT attr,
+                unsigned int* const width_of_num)
+{
+    return NVA__CALL_UINT_TO_STR(nva__ulong_type)(uvalue, str, attr, width_of_num);
+}
+
+/**
+ * 超长整型转字符串
+ * @param value 超长整型数值
+ * @param str 字符串
+ * @param attr 转化属性
+ * @param[out] width_of_num 转化后的数字的位数（如果是负数，负号也包含在宽度内）
+ * @return str
+ */
+NVA_STATIC_INLINE char* nva_lltoa(const NVA_LONG_LONG value, /* NOLINT */
+                                  char* const NVA_RESTRICT str,
+                                  const nva_NumToStringAttr* const NVA_RESTRICT attr,
+                                  unsigned int* const width_of_num)
+{
+    return NVA__CALL_INT_TO_STR(nva__llong_type)(value, str, attr, width_of_num);
+}
+
+/**
+ * 无符号超长整型转字符串
+ * @param uvalue 无符号超长整型数值
+ * @param str 字符串
+ * @param attr 转化属性
+ * @param[out] width_of_num 转化后的数字的位数（如果是负数，负号也包含在宽度内）
+ * @return str
+ */
+NVA_STATIC_INLINE char* nva_ulltoa(const unsigned NVA_LONG_LONG uvalue, /* NOLINT */
+                                   char* const NVA_RESTRICT str,
+                                   const nva_NumToStringAttr* const NVA_RESTRICT attr,
+                                   unsigned int* const width_of_num)
+{
+    return NVA__CALL_UINT_TO_STR(nva__ullong_type)(uvalue, str, attr, width_of_num);
 }
 
 /**
