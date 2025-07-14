@@ -69,7 +69,7 @@ typedef unsigned char nva_TypeId; /**< 类型ID类型 */
      : ((type_id) == NVA_TYPEID_SSHORT || (type_id) == NVA_TYPEID_USHORT)                             ? sizeof(short) \
      : ((type_id) == NVA_TYPEID_SINT || (type_id) == NVA_TYPEID_UINT)                                 ? sizeof(int)   \
      : ((type_id) == NVA_TYPEID_SLONG || (type_id) == NVA_TYPEID_ULONG)                               ? sizeof(long)  \
-     : ((type_id) == NVA_TYPEID_SLLONG || (type_id) == NVA_TYPEID_ULLONG) ? sizeof(long long)                         \
+     : ((type_id) == NVA_TYPEID_SLLONG || (type_id) == NVA_TYPEID_ULLONG) ? sizeof(NVA_LONG_LONG)                     \
      : ((type_id) == NVA_TYPEID_PTR || (type_id) == NVA_TYPEID_STR)       ? sizeof(void*)                             \
      : ((type_id) == NVA_TYPEID_FLOAT)                                    ? sizeof(float)                             \
      : ((type_id) == NVA_TYPEID_DOUBLE)                                   ? sizeof(double)                            \
