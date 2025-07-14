@@ -81,18 +81,16 @@ static nva_Stack nva_fmt_stack; /* declare */
      (ch) == 's' || (ch) == 'x' || (ch) == 'X')
 
 static nva_ErrorCode nva_formatProcess(char* NVA_RESTRICT dest, const char* NVA_RESTRICT format);
-static void nva_processAlign(char* NVA_RESTRICT dest,
-                             const nva_FormatStyle* NVA_RESTRICT style,
-                             unsigned int width_of_str,
-                             unsigned int* width_of_process);
-static void nva_processInteger(char* NVA_RESTRICT dest,
-                               nva_FormatStyle* NVA_RESTRICT style,
-                               const nva_StackDataInfo* NVA_RESTRICT data_info,
-                               unsigned int* width_of_process);
-static void nva_processChar(char* const NVA_RESTRICT dest,
-                            nva_FormatStyle* const NVA_RESTRICT style,
-                            const nva_StackDataInfo* const NVA_RESTRICT data_info,
-                            unsigned int* const width_of_process);
+static unsigned int nva_processAlign(char* NVA_RESTRICT dest,
+                                     const nva_FormatStyle* NVA_RESTRICT style,
+                                     unsigned int width_of_str);
+static void nva_processZeroPrefix(char* NVA_RESTRICT dest, unsigned char num_of_zero, unsigned int width_of_pure_num);
+static unsigned int nva_processInteger(char* NVA_RESTRICT dest,
+                                       nva_FormatStyle* NVA_RESTRICT style,
+                                       const nva_StackDataInfo* NVA_RESTRICT data_info);
+static unsigned int nva_processChar(char* NVA_RESTRICT dest,
+                                    nva_FormatStyle* NVA_RESTRICT style,
+                                    const nva_StackDataInfo* NVA_RESTRICT data_info);
 
 /**
  * @defgroup nva_ParamFunctions
@@ -255,12 +253,11 @@ nva_ErrorCode nva_format(char* NVA_RESTRICT dest, /* NOLINT */
  * @param dest 承接格式化字符串的内存
  * @param style 格式化效果
  * @param width_of_str 已经在 dest 上转化好了的字符串的宽度
- * @param[out] width_of_process 对齐处理完成后，这一段的宽度
+ * @return 对齐处理完成后，这一段的宽度
  */
-static void nva_processAlign(char* const NVA_RESTRICT dest,
-                             const nva_FormatStyle* const NVA_RESTRICT style,
-                             const unsigned int width_of_str,
-                             unsigned int* const width_of_process)
+static unsigned int nva_processAlign(char* const NVA_RESTRICT dest,
+                                     const nva_FormatStyle* const NVA_RESTRICT style,
+                                     const unsigned int width_of_str)
 {
     unsigned int i = 0U, j;
     unsigned int center_left, center_right;
@@ -315,7 +312,26 @@ static void nva_processAlign(char* const NVA_RESTRICT dest,
         break;
     }
 
-    *width_of_process = i;
+    return i;
+}
+
+/**
+ * 处理前缀0
+ * @param dest 承接格式化字符串的内存
+ * @param num_of_zero 前缀0的个数
+ * @param width_of_pure_num 已经在 dest 上转化好了的数字（不包含前缀）的宽度
+ * @return 对齐处理完成后，这一段的宽度
+ */
+static void nva_processZeroPrefix(char* NVA_RESTRICT dest,
+                                  unsigned char num_of_zero,
+                                  const unsigned int width_of_pure_num)
+{
+    nva_memmove(dest + num_of_zero, dest, width_of_pure_num);
+
+    for (; num_of_zero != 0U; --num_of_zero) {
+        *dest = '0';
+        ++dest;
+    }
 }
 
 /**
@@ -323,23 +339,15 @@ static void nva_processAlign(char* const NVA_RESTRICT dest,
  * @param dest 承接格式化字符串的内存
  * @param style 格式化效果
  * @param data_info 栈数据的信息
- * @param[out] width_of_process 处理完成后，这一段的宽度
+ * @return 处理完成后，这一段的宽度
  */
-static void nva_processInteger(char* const NVA_RESTRICT dest,
-                               nva_FormatStyle* const NVA_RESTRICT style,
-                               const nva_StackDataInfo* const NVA_RESTRICT data_info,
-                               unsigned int* const width_of_process)
+static unsigned int nva_processInteger(char* const NVA_RESTRICT dest,
+                                       nva_FormatStyle* const NVA_RESTRICT style,
+                                       const nva_StackDataInfo* const NVA_RESTRICT data_info)
 {
     unsigned char i = 0U;
-    unsigned int width_of_num, width_of_align_process;
+    unsigned int width_of_num;
     nva_NumToStringAttr num_to_string_attr = {.base = 10, .upper_case = NVA_FALSE};
-
-    if (style->flag.align == NVA_FMT_FLG_ALIGN_DEFAULT) {
-        style->flag.align = NVA_FMT_FLG_ALIGN_RIGHT;
-        if (style->flag.zero) {
-            style->filler = '0';
-        }
-    }
 
     if (style->type == '\0') {
         style->type = 'd';
@@ -425,9 +433,21 @@ static void nva_processInteger(char* const NVA_RESTRICT dest,
         nva_uitoa(NVA_STACK_GET_UINTEGER(*data_info), dest + i, &num_to_string_attr, &width_of_num);
     }
 
-    nva_processAlign(dest, style, width_of_num + i, &width_of_align_process);
+    if (style->flag.align == NVA_FMT_FLG_ALIGN_DEFAULT) {
+        if (style->flag.zero) {
+            if ((signed)(width_of_num + i) < style->width) {
+                nva_processZeroPrefix(dest + i, style->width - (signed)(width_of_num + i), width_of_num);
 
-    *width_of_process = width_of_align_process;
+                return style->width;
+            }
+
+            return width_of_num + i;
+        }
+
+        style->flag.align = NVA_FMT_FLG_ALIGN_RIGHT;
+    }
+
+    return nva_processAlign(dest, style, width_of_num + i);
 }
 
 /**
@@ -435,24 +455,19 @@ static void nva_processInteger(char* const NVA_RESTRICT dest,
  * @param dest 承接格式化字符串的内存
  * @param style 格式化效果
  * @param data_info 栈数据的信息
- * @param[out] width_of_process 处理完成后，这一段的宽度
+ * @return 处理完成后，这一段的宽度
  */
-static void nva_processChar(char* const NVA_RESTRICT dest,
-                            nva_FormatStyle* const NVA_RESTRICT style,
-                            const nva_StackDataInfo* const NVA_RESTRICT data_info,
-                            unsigned int* const width_of_process)
+static unsigned int nva_processChar(char* const NVA_RESTRICT dest,
+                                    nva_FormatStyle* const NVA_RESTRICT style,
+                                    const nva_StackDataInfo* const NVA_RESTRICT data_info)
 {
-    unsigned int width_of_align_process;
-
     if (style->flag.align == NVA_FMT_FLG_ALIGN_DEFAULT) {
         style->flag.align = NVA_FMT_FLG_ALIGN_LEFT;
     }
 
     dest[0] = data_info->stack_data->char_v;
 
-    nva_processAlign(dest, style, 1, &width_of_align_process);
-
-    *width_of_process = width_of_align_process;
+    return nva_processAlign(dest, style, 1);
 }
 
 static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char* const NVA_RESTRICT format)
@@ -524,7 +539,7 @@ static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char
                 }
 
                 if (error_code != NVA_SUCCESS) {
-                    return NVA_FAIL;
+                    return error_code;
                 }
 
                 current_phase_data_info = (nva_StackDataInfo){.stack_data = &current_phase_value, .type_id = type_id};
@@ -536,15 +551,14 @@ static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char
                 case NVA_TYPEID_USHORT:
                 case NVA_TYPEID_SINT:
                 case NVA_TYPEID_UINT:
-                    nva_processInteger(dest + i, &style, &current_phase_data_info, &phasing_num_width);
-                    error_code = NVA_SUCCESS;
+                    i += nva_processInteger(dest + i, &style, &current_phase_data_info);
                     break;
 
                 case NVA_TYPEID_PTR:
                     break;
 
                 case NVA_TYPEID_CHAR:
-                    nva_processChar(dest + i, &style, &current_phase_data_info, &phasing_num_width);
+                    i += nva_processChar(dest + i, &style, &current_phase_data_info);
                     break;
 
                 case NVA_TYPEID_STR:
@@ -552,11 +566,6 @@ static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char
 
                 default:
                     break;
-                }
-                i += phasing_num_width;
-
-                if (error_code != NVA_SUCCESS) {
-                    return NVA_FAIL;
                 }
 
                 in_formatting = NVA_FALSE;
@@ -654,7 +663,7 @@ static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char
                 if (format[j] >= '0' && format[j] <= '9') {
                     do {
                         if (format[j] == '0') {
-                            if (style.flag.align != NVA_FMT_FLG_ALIGN_DEFAULT) {
+                            if (style.flag.align == NVA_FMT_FLG_ALIGN_DEFAULT) {
                                 style.flag.zero = 1U;
                             }
                             ++j;
