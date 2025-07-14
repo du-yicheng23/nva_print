@@ -499,6 +499,88 @@ static unsigned int nva_processStr(char* const NVA_RESTRICT dest,
     return nva_processAlign(dest, style, i);
 }
 
+static unsigned int nva_processPtr(char* const NVA_RESTRICT dest,
+                                   nva_FormatStyle* const NVA_RESTRICT style,
+                                   const nva_StackDataInfo* const NVA_RESTRICT data_info)
+{
+    unsigned char i = 0U;
+    unsigned int width_of_num;
+    nva_NumToStringAttr num_to_string_attr = {.base = 16, .upper_case = NVA_FALSE};
+
+    if (style->type == '\0') {
+        style->type = 'x';
+        style->flag.prefix = 1U;
+    }
+
+    switch (style->type) {
+    case 'b':
+    case 'B':
+        num_to_string_attr.base = 2;
+        break;
+
+    case 'd':
+        num_to_string_attr.base = 10;
+        break;
+
+    case 'o':
+        num_to_string_attr.base = 8;
+        break;
+
+    case 'x':
+    case 'X':
+
+    default:
+        break;
+    }
+
+    if (style->type >= 'A' && style->type <= 'Z') {
+        num_to_string_attr.upper_case = NVA_TRUE;
+    }
+
+    if (style->flag.prefix) {
+        switch (style->type) {
+        case 'b':
+            nva_strcat(dest + i, "0b");
+            goto end_of_style_check;
+        case 'B':
+            nva_strcat(dest + i, "0B");
+            goto end_of_style_check;
+
+        case 'x':
+            nva_strcat(dest + i, "0x");
+            goto end_of_style_check;
+        case 'X':
+            nva_strcat(dest + i, "0X");
+            goto end_of_style_check;
+
+        end_of_style_check:
+            i += 2;
+            break;
+
+        default:
+            break;
+        }
+    }
+
+    nva_sizetoa((NVA_SIZE_T)data_info->stack_data->ptr_v, dest + i, &num_to_string_attr, &width_of_num);
+
+    if (style->flag.align == NVA_FMT_FLG_ALIGN_DEFAULT) {
+        if (style->flag.zero) {
+            if ((signed)(width_of_num + i) < style->width) {
+                nva_processZeroPrefix(dest + i, style->width - (signed)(width_of_num + i), width_of_num);
+
+                return style->width;
+            }
+
+            return width_of_num + i;
+        }
+
+        style->flag.align = NVA_FMT_FLG_ALIGN_RIGHT;
+    }
+
+    return nva_processAlign(dest, style, width_of_num + i);
+}
+
 static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char* const NVA_RESTRICT format)
 {
     NVA_SIZE_T i; /* for dest */
@@ -584,6 +666,7 @@ static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char
                     break;
 
                 case NVA_TYPEID_PTR:
+                    i += nva_processPtr(dest + i, &style, &current_phase_data_info);
                     break;
 
                 case NVA_TYPEID_CHAR:
