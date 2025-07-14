@@ -337,6 +337,8 @@ NVA_STATIC_INLINE int nva_atoi(const char* const NVA_RESTRICT str, unsigned int*
     return value;
 }
 
+NVA_STATIC_INLINE NVA__DEF_INT_TO_STR(int);
+
 /**
  * 整型转字符串
  * @param value 整型数值
@@ -350,46 +352,11 @@ NVA_STATIC_INLINE char* nva_itoa(const int value, /* NOLINT */
                                  const nva_NumToStringAttr* const NVA_RESTRICT attr,
                                  unsigned int* const width_of_num)
 {
-    unsigned int uvalue;
-    signed char i = 0, j, k;
-    char temp; /* 临时变量，用于最后一步逆序 */
-
-    /* 获取要转换的整数的绝对值 */
-    if (value < 0) {
-        uvalue = (unsigned int)(-value);
-        str[i++] = '-';
-    }
-    else {
-        uvalue = (unsigned int)value;
-    }
-
-    /* 转换部分，注意转换后是逆序的 */
-    do {
-        str[i++] = (attr->upper_case ? nva_itoa_str_table_upper[uvalue % attr->base]
-                                     : nva_itoa_str_table[uvalue % attr->base]);
-        uvalue /= attr->base;
-    } while (uvalue != 0U);
-
-    *width_of_num = (unsigned int)i;
-    str[i] = '\0';
-
-    /* 将顺序调整过来 */
-    if (str[0] == '-') {
-        k = 1; /* 如果是负数，符号不用调整，从符号后面开始调整 */
-    }
-    else {
-        k = 0; /* 否则全部都要调整 */
-    }
-
-    /* 头尾一一对称交换，i其实就是字符串的长度，索引最大值比长度少1 */
-    for (j = k; j <= (i - 1) / 2; j++) { /* NOLINT: the value of j would not be out of range. */
-        temp = str[j];
-        str[j] = str[i - 1 + k - j];
-        str[i - 1 + k - j] = temp;
-    }
-
-    return str;
+    return NVA__CALL_INT_TO_STR(int)(value, str, attr, width_of_num);
 }
+
+NVA_STATIC_INLINE NVA__DEF_UINT_TO_STR(nva__uint_type);
+NVA_STATIC_INLINE NVA__DEF_UINT_TO_STR(nva__size_type);
 
 /**
  * 无符号整型转字符串
@@ -404,35 +371,23 @@ NVA_STATIC_INLINE char* nva_uitoa(unsigned int uvalue, /* NOLINT */
                                   const nva_NumToStringAttr* const NVA_RESTRICT attr,
                                   unsigned int* const width_of_num)
 {
-    signed char i = 0, j, k;
-    char temp; /* 临时变量，用于最后一步逆序 */
+    return NVA__CALL_UINT_TO_STR(nva__uint_type)(uvalue, str, attr, width_of_num);
+}
 
-    /* 转换为字符串，注意转换后是逆序的 */
-    do {
-        str[i++] = (attr->upper_case ? nva_itoa_str_table_upper[uvalue % attr->base]
-                                     : nva_itoa_str_table[uvalue % attr->base]);
-        uvalue /= attr->base;
-    } while (uvalue != 0U);
-
-    *width_of_num = (unsigned int)i;
-    str[i] = '\0';
-
-    /* 将顺序调整过来 */
-    if (str[0] == '-') {
-        k = 1; /* 如果是负数，符号不用调整，从符号后面开始调整 */
-    }
-    else {
-        k = 0; /* 否则全部都要调整 */
-    }
-
-    /* 头尾一一对称交换，i其实就是字符串的长度，索引最大值比长度少1 */
-    for (j = k; j <= (i - 1) / 2; j++) { /* NOLINT: the value of j would not be out of range. */
-        temp = str[j];
-        str[j] = str[i - 1 + k - j];
-        str[i - 1 + k - j] = temp;
-    }
-
-    return str;
+/**
+ * NVA_SIZE_T 类型整数转字符串
+ * @param uvalue 无符号整型数值
+ * @param str 字符串
+ * @param attr 转化属性
+ * @param[out] width_of_num 转化后的数字的位数（如果是负数，负号也包含在宽度内）
+ * @return str
+ */
+NVA_STATIC_INLINE char* nva_sizetoa(const NVA_SIZE_T uvalue, /* NOLINT */
+                                    char* const NVA_RESTRICT str,
+                                    const nva_NumToStringAttr* const NVA_RESTRICT attr,
+                                    unsigned int* const width_of_num)
+{
+    return NVA__CALL_UINT_TO_STR(nva__size_type)(uvalue, str, attr, width_of_num);
 }
 
 /**
