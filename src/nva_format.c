@@ -702,6 +702,10 @@ static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char
                     i += nva_processInteger(dest + i, &style, &current_phase_data_info);
                     break;
 
+                case NVA_TYPEID_FLOAT:
+                case NVA_TYPEID_DOUBLE:
+                    break;
+
                 case NVA_TYPEID_PTR:
                     i += nva_processPtr(dest + i, &style, &current_phase_data_info);
                     break;

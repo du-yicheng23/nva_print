@@ -21,6 +21,33 @@ typedef struct nva_NumToStringAttr {
     NVA_BOOL upper_case; /**< 是否为大写 */
 } nva_NumToStringAttr;
 
+/**
+ * 浮点转字符串的类型
+ */
+enum nva_FloatPointToStrType {
+    NVA_FP_TO_STR_TYPE_F = 0U, /**< 定点数 */
+    NVA_FP_TO_STR_TYPE_G,      /**< 常规 */
+    NVA_FP_TO_STR_TYPE_E,      /**< 科学计数法 */
+    NVA_FP_TO_STR_TYPE_A       /**< 十六进制 */
+};
+
+/**
+ * 浮点转字符串的属性
+ */
+typedef struct nva_FloatPointToStrAttr {
+    unsigned char base;      /**< 基数 */
+    unsigned char precision; /**< 小数点后保留的位数或有效数字位数（与flag.type 的取值有关） */
+
+    /**
+     * 转化属性标志
+     */
+    struct nva_FpToStrFlag {
+        unsigned char keep_decimal_point : 1; /**< 保留小数点 */
+        unsigned char upper_case : 1;         /**< 是否为大写 */
+        unsigned char type : 2;               /**< 类型 */
+    } flag;
+} nva_FloatPointToStrAttr;
+
 extern const char nva_itoa_str_table[17];
 extern const char nva_itoa_str_table_upper[17];
 
@@ -73,6 +100,8 @@ char* nva_sizetoa(NVA_SIZE_T uvalue,
                   char* NVA_RESTRICT str,
                   const nva_NumToStringAttr* NVA_RESTRICT attr,
                   unsigned int* width_of_num);
+
+unsigned int nva_fptoa(double value, char* NVA_RESTRICT dest, const nva_FloatPointToStrAttr* NVA_RESTRICT attr);
 
 unsigned int nva_gcvt(double value, unsigned char precision, char* NVA_RESTRICT str);
 

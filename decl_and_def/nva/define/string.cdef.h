@@ -23,16 +23,16 @@
 #define NVA__USE_STD_STRING NVA_FALSE
 
 #endif /* !NVA_NO_STRING_H */
-#define NVA_SUPPORT_INF_AND_NAN
-#ifdef NVA_SUPPORT_INF_AND_NAN
+
+#ifndef NVA_NO_INF_AND_NAN
 
 #include "math.h"
 
-#define NVA__USE_INF_AND_NAN NVA_TRUE
+#define NVA__DETECT_INF_AND_NAN NVA_TRUE
 
 #else
 
-#define NVA__USE_INF_AND_NAN NVA_FALSE
+#define NVA__DETECT_INF_AND_NAN NVA_FALSE
 
 #endif
 

@@ -520,14 +520,7 @@ char* nva_sizetoa(const NVA_SIZE_T uvalue,
     return NVA__CALL_UINT_TO_STR(nva__size_type)(uvalue, str, attr, width_of_num);
 }
 
-/**
- * 浮点值转字符串
- * @param value 浮点类型数值（float 与 double 类型均可）
- * @param precision 精度（保留小数点后的位数，会自动舍入）
- * @param str 字符串
- * @return 转化后的 str 的长度
- */
-unsigned int nva_gcvt(double value, const unsigned char precision, char* const NVA_RESTRICT str)
+unsigned int nva_fptoa(double value, char* NVA_RESTRICT dest, const nva_FloatPointToStrAttr* const NVA_RESTRICT attr)
 {
     NVA_SIZE_T integer;
     NVA_SIZE_T decimal;
@@ -535,15 +528,47 @@ unsigned int nva_gcvt(double value, const unsigned char precision, char* const N
     char roundoff_value;
     NVA_BOOL is_decimal_zero = NVA_FALSE;
 
-#if (NVA__USE_INF_AND_NAN)
+#if (NVA__DETECT_INF_AND_NAN)
     if (isinf(value)) {
+        if (signbit(value)) {
+            dest[i++] = '-';
+        }
+
+        if (attr->flag.upper_case) {
+            dest[i++] = 'I';
+            dest[i++] = 'N';
+            dest[i++] = 'F';
+        }
+        else {
+            dest[i++] = 'i';
+            dest[i++] = 'n';
+            dest[i++] = 'f';
+        }
+
+        return i;
     }
     else if (isnan(value)) {
+        if (signbit(value)) {
+            dest[i++] = '-';
+        }
+
+        if (attr->flag.upper_case) {
+            dest[i++] = 'N';
+            dest[i++] = 'A';
+            dest[i++] = 'N';
+        }
+        else {
+            dest[i++] = 'n';
+            dest[i++] = 'a';
+            dest[i++] = 'n';
+        }
+
+        return i;
     }
 #endif
 
     if (value < 0.0) {
-        str[i++] = '-';
+        dest[i++] = '-';
         value = -value;
     }
 
@@ -552,7 +577,7 @@ unsigned int nva_gcvt(double value, const unsigned char precision, char* const N
     value -= (double)integer;
 
     /* 要多乘以一次10，因为要根据保留的下一位决定是舍入 */
-    for (j = 0U; j <= precision; ++j) {
+    for (j = 0U; j <= attr->precision; ++j) {
         value *= 10.0;
     }
 
@@ -562,85 +587,90 @@ unsigned int nva_gcvt(double value, const unsigned char precision, char* const N
     roundoff_value = (char)(decimal % 10U);
     decimal /= 10U;
 
-    if (precision != 0) {
+    if (attr->precision != 0) {
         /* 转换为字符串，注意转换后是逆序的 */
         do {
-            str[i++] = decimal % 10U + '0'; /* NOLINT: we can confim that (decimal % 10U) is in range [0, 9]. */
+            dest[i++] = decimal % 10U + '0'; /* NOLINT: we can confim that (decimal % 10U) is in range [0, 9]. */
             decimal /= 10U;
         } while (decimal != 0U);
 
-        if (str[0] != '-') {
-            for (; i < precision; ++i) {
-                str[i] = '0';
+        if (attr->flag.type != NVA_FP_TO_STR_TYPE_F) {
+            if (dest[0] != '-') {
+                for (; i < attr->precision; ++i) {
+                    dest[i] = '0';
+                }
             }
-        }
-        else {
-            for (; i - 1 < precision; ++i) {
-                str[i] = '0';
+            else {
+                for (; i - 1 < attr->precision; ++i) {
+                    dest[i] = '0';
+                }
             }
         }
 
-        str[i++] = '.';
+        dest[i++] = '.';
 
         /* 舍入 */
-        if (str[0] == '-') {
+        if (dest[0] == '-') {
             if (roundoff_value > 5) {
-                str[1] += 1;
+                dest[1] += 1;
             }
             else if (roundoff_value == 5) {
-                if ((str[1] - '0') % 2U != 0U) {
-                    str[1] += 1;
+                if ((dest[1] - '0') % 2U != 0U) {
+                    dest[1] += 1;
                 }
             }
         }
         else {
             if (roundoff_value > 5) {
-                str[0] += 1;
+                dest[0] += 1;
             }
             else if (roundoff_value == 5) {
-                if ((str[0] - '0') % 2U != 0U) {
-                    str[0] += 1;
+                if ((dest[0] - '0') % 2U != 0U) {
+                    dest[0] += 1;
                 }
             }
         }
     }
     else {
         is_decimal_zero = NVA_TRUE;
+        if (attr->flag.keep_decimal_point) {
+            dest[i++] = '.';
+        }
     }
 
     do {
-        str[i++] = integer % 10U + '0'; /* NOLINT: we can confim that (decimal % 10U) is in range [0, 9]. */
+        dest[i++] = integer % 10U + '0'; /* NOLINT: we can confim that (decimal % 10U) is in range [0, 9]. */
         integer /= 10U;
     } while (integer != 0U);
 
     if (is_decimal_zero) {
         /* 舍入 */
-        if (str[0] == '-') {
+        if (dest[0] == '-') {
             if (roundoff_value > 5) {
-                str[1] += 1;
+                dest[1] += 1;
             }
             else if (roundoff_value == 5) {
-                if ((str[1] - '0') % 2U != 0U) {
-                    str[1] += 1;
+                if ((dest[1] - '0') % 2U != 0U) {
+                    dest[1] += 1;
                 }
             }
         }
         else {
             if (roundoff_value > 5) {
-                str[0] += 1;
+                dest[0] += 1;
             }
             else if (roundoff_value == 5) {
-                if ((str[0] - '0') % 2U != 0U) {
-                    str[0] += 1;
+                if ((dest[0] - '0') % 2U != 0U) {
+                    dest[0] += 1;
                 }
             }
         }
     }
 
-    str[i] = '\0';
+    dest[i] = '\0';
 
     /* 将顺序调整过来 */
-    if (str[0] == '-') {
+    if (dest[0] == '-') {
         k = 1; /* 如果是负数，符号不用调整，从符号后面开始调整 */
     }
     else {
@@ -649,10 +679,19 @@ unsigned int nva_gcvt(double value, const unsigned char precision, char* const N
 
     /* 头尾一一对称交换，i其实就是字符串的长度，索引最大值比长度少1 */
     for (j = k; j <= (i - 1) / 2; j++) { /* NOLINT: the value of j would not be out of range. */
-        roundoff_value = str[j];         /* 由于 roundoff_value 不再需要使用，因此把它当作临时变量 */
-        str[j] = str[i - 1 + k - j];
-        str[i - 1 + k - j] = roundoff_value;
+        roundoff_value = dest[j];        /* 由于 roundoff_value 不再需要使用，因此把它当作临时变量 */
+        dest[j] = dest[i - 1 + k - j];
+        dest[i - 1 + k - j] = roundoff_value;
     }
 
     return i;
 }
+
+/**
+ * 浮点值转字符串
+ * @param value 浮点类型数值（float 与 double 类型均可）
+ * @param precision 精度（保留小数点后的位数，会自动舍入）
+ * @param str 字符串
+ * @return 转化后的 str 的长度
+ */
+unsigned int nva_gcvt(double value, const unsigned char precision, char* const NVA_RESTRICT str) {}
