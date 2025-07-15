@@ -520,7 +520,20 @@ char* nva_sizetoa(const NVA_SIZE_T uvalue,
     return NVA__CALL_UINT_TO_STR(nva__size_type)(uvalue, str, attr, width_of_num);
 }
 
-unsigned int nva_fptoa(double value, char* NVA_RESTRICT dest, const nva_FloatPointToStrAttr* const NVA_RESTRICT attr)
+/**
+ * 浮点数转字符串
+ * @note 这个函数会将浮点数转换为字符串，保留小数点后 attr->precision 位数字。
+ * 根据 attr->flag.type 的不同，转换的方式也会有所不同：
+ *     @arg 如果 attr->flag.type 是 NVA_FP_TO_STR_TYPE_F，那么如果小数部分小于保留的位数，将会用0补齐；
+ *     @arg 如果 attr->flag.type 是 NVA_FP_TO_STR_TYPE_G，那么如果小数部分小于保留的位数，将省略末尾的0。
+ * @param value 待转换的浮点数
+ * @param dest 字符串
+ * @param attr 转化属性
+ * @return 转换后的字符串长度（如果是负数，负号也包含在宽度内）
+ */
+unsigned int nva_fptoa(double value,
+                       char* const NVA_RESTRICT dest,
+                       const nva_FloatPointToStrAttr* const NVA_RESTRICT attr)
 {
     NVA_SIZE_T integer;
     NVA_SIZE_T decimal;
@@ -565,12 +578,19 @@ unsigned int nva_fptoa(double value, char* NVA_RESTRICT dest, const nva_FloatPoi
 
         return i;
     }
-#endif
 
+    /* signbit 可以判断 -0.0 的情况 */
+    if (signbit(value)) {
+        dest[i++] = '-';
+        value = -value;
+    }
+
+#else
     if (value < 0.0) {
         dest[i++] = '-';
         value = -value;
     }
+#endif
 
     integer = (NVA_SIZE_T)value;
 
@@ -588,13 +608,18 @@ unsigned int nva_fptoa(double value, char* NVA_RESTRICT dest, const nva_FloatPoi
     decimal /= 10U;
 
     if (attr->precision != 0) {
-        /* 转换为字符串，注意转换后是逆序的 */
-        do {
-            dest[i++] = decimal % 10U + '0'; /* NOLINT: we can confim that (decimal % 10U) is in range [0, 9]. */
-            decimal /= 10U;
-        } while (decimal != 0U);
+        if (attr->flag.type == NVA_FP_TO_STR_TYPE_G && decimal == 0) {
+            if (attr->flag.keep_decimal_point) {
+                dest[i++] = '.';
+            }
+        }
+        else {
+            /* 转换为字符串，注意转换后是逆序的 */
+            do {
+                dest[i++] = decimal % 10U + '0'; /* NOLINT: we can confim that (decimal % 10U) is in range [0, 9]. */
+                decimal /= 10U;
+            } while (decimal != 0U);
 
-        if (attr->flag.type != NVA_FP_TO_STR_TYPE_F) {
             if (dest[0] != '-') {
                 for (; i < attr->precision; ++i) {
                     dest[i] = '0';
@@ -605,28 +630,28 @@ unsigned int nva_fptoa(double value, char* NVA_RESTRICT dest, const nva_FloatPoi
                     dest[i] = '0';
                 }
             }
-        }
 
-        dest[i++] = '.';
+            dest[i++] = '.';
 
-        /* 舍入 */
-        if (dest[0] == '-') {
-            if (roundoff_value > 5) {
-                dest[1] += 1;
-            }
-            else if (roundoff_value == 5) {
-                if ((dest[1] - '0') % 2U != 0U) {
+            /* 舍入 */
+            if (dest[0] == '-') {
+                if (roundoff_value > 5) {
                     dest[1] += 1;
                 }
+                else if (roundoff_value == 5) {
+                    if ((dest[1] - '0') % 2U != 0U) {
+                        dest[1] += 1;
+                    }
+                }
             }
-        }
-        else {
-            if (roundoff_value > 5) {
-                dest[0] += 1;
-            }
-            else if (roundoff_value == 5) {
-                if ((dest[0] - '0') % 2U != 0U) {
+            else {
+                if (roundoff_value > 5) {
                     dest[0] += 1;
+                }
+                else if (roundoff_value == 5) {
+                    if ((dest[0] - '0') % 2U != 0U) {
+                        dest[0] += 1;
+                    }
                 }
             }
         }
@@ -686,12 +711,3 @@ unsigned int nva_fptoa(double value, char* NVA_RESTRICT dest, const nva_FloatPoi
 
     return i;
 }
-
-/**
- * 浮点值转字符串
- * @param value 浮点类型数值（float 与 double 类型均可）
- * @param precision 精度（保留小数点后的位数，会自动舍入）
- * @param str 字符串
- * @return 转化后的 str 的长度
- */
-unsigned int nva_gcvt(double value, const unsigned char precision, char* const NVA_RESTRICT str) {}

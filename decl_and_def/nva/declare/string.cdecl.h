@@ -103,8 +103,6 @@ char* nva_sizetoa(NVA_SIZE_T uvalue,
 
 unsigned int nva_fptoa(double value, char* NVA_RESTRICT dest, const nva_FloatPointToStrAttr* NVA_RESTRICT attr);
 
-unsigned int nva_gcvt(double value, unsigned char precision, char* NVA_RESTRICT str);
-
 NVA_EXTERN_C_END
 
 #endif  // !NVA_STRING_CDECL_H
