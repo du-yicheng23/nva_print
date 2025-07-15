@@ -154,13 +154,14 @@ typedef struct nva_StackDataInfo {
 
 #if (!NVA_INLINE_MODE)
 nva_ErrorCode nva_stackInit(nva_Stack* NVA_RESTRICT stack);
+#endif /* (!NVA_INLINE_MODE) */
+
 nva_ErrorCode nva_stackPush(nva_Stack* NVA_RESTRICT stack, const void* NVA_RESTRICT value, nva_TypeId type_id);
 nva_ErrorCode nva_stackPeek(const nva_Stack* NVA_RESTRICT stack,
                             unsigned int i,
                             void* NVA_RESTRICT value,
                             nva_TypeId* NVA_RESTRICT type_id);
 nva_ErrorCode nva_stackPop(nva_Stack* NVA_RESTRICT stack, void* NVA_RESTRICT value, nva_TypeId* NVA_RESTRICT type_id);
-#endif /* (!NVA_INLINE_MODE) */
 
 NVA_EXTERN_C_END
 
