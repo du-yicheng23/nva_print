@@ -27,8 +27,8 @@
 
 #include <stddef.h>
 
-typedef size_t NVA_SIZE_T;
-#define NVA_NULL NULL
+#define NVA_SIZE_T size_t
+#define NVA_NULL   NULL
 
 #else /* !NVA_NO_STDDEF_H */
 

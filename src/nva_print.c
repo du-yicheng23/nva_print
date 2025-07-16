@@ -10,13 +10,13 @@
 #include "nva/format.h"
 
 #ifndef NVA_PRINT_BUFFER_SIZE
-#define NVA_BUFFER_SIZE 128
+#define NVA_PRINT_BUFFER_SIZE 128
 #endif
 
 /**
  * 打印字符串的缓冲区
  */
-static char nva__print_buffer[NVA_BUFFER_SIZE];
+static char nva__print_buffer[NVA_PRINT_BUFFER_SIZE];
 
 /**
  * 格式化并打印字符串

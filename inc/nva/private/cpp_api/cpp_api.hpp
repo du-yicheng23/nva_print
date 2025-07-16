@@ -16,6 +16,11 @@ inline nva_ErrorCode format(char* dest, const char* format, const nva_FmtStatus 
     return nva_format(dest, format, status);
 }
 
+inline nva_ErrorCode print(const char* format, const nva_FmtStatus status)
+{
+    return nva_print(format, status);
+}
+
 inline nva_FmtStatus add(const int value, const nva_FmtStatus status)
 {
     return nva_int(value, status);
