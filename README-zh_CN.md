@@ -158,6 +158,11 @@ target_link_libraries(
 
 本仓库不包含测试代码。测试代码在仓库 [nva_print_test](https://github.com/du-yicheng23/nva_print_test) 中。
 
+## 贡献
+
+由于本仓库不包含测试代码，直接在这个仓库内进行修改不便于构建。请参考
+[nva_print_test](https://github.com/du-yicheng23/nva_print_test) 中的贡献指南。
+
 ## 许可证
 
 [MIT LICENSE](./LICENSE)
