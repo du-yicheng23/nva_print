@@ -51,6 +51,16 @@ inline nva_FmtStatus add(const char* value, const nva_FmtStatus status)
     return str(value, status);
 }
 
+inline nva_FmtStatus add(const float value, const nva_FmtStatus status)
+{
+    return nva_float(value, status);
+}
+
+inline nva_FmtStatus add(const double value, const nva_FmtStatus status)
+{
+    return nva_double(value, status);
+}
+
 }  // namespace nva
 
 #endif /* !NVA_CPP_API_HPP */

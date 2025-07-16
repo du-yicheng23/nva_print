@@ -30,11 +30,11 @@
 
 #define NVA__DETECT_INF_AND_NAN NVA_TRUE
 
-#else
+#else /* !NVA_NO_INF_AND_NAN */
 
 #define NVA__DETECT_INF_AND_NAN NVA_FALSE
 
-#endif
+#endif /* !NVA_NO_INF_AND_NAN */
 
 NVA_EXTERN_C_BEGIN
 

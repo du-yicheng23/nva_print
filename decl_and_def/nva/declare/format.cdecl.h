@@ -93,6 +93,8 @@ nva_FmtStatus nva_ullong(unsigned NVA_LONG_LONG uvalue, nva_FmtStatus status);
 nva_FmtStatus nva_ptr(const void* ptr, nva_FmtStatus status);
 nva_FmtStatus nva_char(char ch, nva_FmtStatus status);
 nva_FmtStatus nva_str(const char* str, nva_FmtStatus status);
+nva_FmtStatus nva_float(float value, nva_FmtStatus status);
+nva_FmtStatus nva_double(double value, nva_FmtStatus status);
 
 /**
  * @}

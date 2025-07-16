@@ -50,6 +50,9 @@ static unsigned int nva_processStr(char* NVA_RESTRICT dest,
 static unsigned int nva_processPtr(char* NVA_RESTRICT dest,
                                    nva_FormatStyle* NVA_RESTRICT style,
                                    const nva_StackDataInfo* NVA_RESTRICT data_info);
+static unsigned int nva_processFloatPoint(char* NVA_RESTRICT dest,
+                                          nva_FormatStyle* NVA_RESTRICT style,
+                                          const nva_StackDataInfo* NVA_RESTRICT data_info);
 
 /**
  * @defgroup nva_ParamFunctions
@@ -220,6 +223,32 @@ nva_FmtStatus nva_str(const char* const str, const nva_FmtStatus status)
     }
 
     if (nva_stackPush(&nva__fmt_stack, &str, NVA_TYPEID_STR) == NVA_SUCCESS) {
+        return NVA_START;
+    }
+
+    return NVA_ERROR;
+}
+
+nva_FmtStatus nva_float(const float value, const nva_FmtStatus status)
+{
+    if (status.status != NVA_START.status) {
+        return NVA_ERROR;
+    }
+
+    if (nva_stackPush(&nva__fmt_stack, &value, NVA_TYPEID_FLOAT) == NVA_SUCCESS) {
+        return NVA_START;
+    }
+
+    return NVA_ERROR;
+}
+
+nva_FmtStatus nva_double(const double value, const nva_FmtStatus status)
+{
+    if (status.status != NVA_START.status) {
+        return NVA_ERROR;
+    }
+
+    if (nva_stackPush(&nva__fmt_stack, &value, NVA_TYPEID_DOUBLE) == NVA_SUCCESS) {
         return NVA_START;
     }
 
@@ -407,6 +436,8 @@ static unsigned int nva_processInteger(char* const NVA_RESTRICT dest,
     }
 
     if (style->flag.prefix) {
+        dest[i] = '\0';
+
         switch (style->type) {
         case 'b':
             nva_strcat(dest + i, "0b");
@@ -614,6 +645,136 @@ static unsigned int nva_processPtr(char* const NVA_RESTRICT dest,
     return nva_processAlign(dest, style, width_of_num + i);
 }
 
+/**
+ * 处理浮点数
+ * @param dest 承接格式化字符串的内存
+ * @param style 格式化效果
+ * @param data_info 栈数据的信息
+ * @return 处理完成后，这一段的宽度
+ */
+static unsigned int nva_processFloatPoint(char* const NVA_RESTRICT dest,
+                                          nva_FormatStyle* const NVA_RESTRICT style,
+                                          const nva_StackDataInfo* const NVA_RESTRICT data_info)
+{
+    unsigned char i = 0U;
+    unsigned int width_of_num;
+    nva_FloatPointToStrAttr num_to_string_attr = {
+        .base = 10,
+        .precision = (style->precision == -1 ? (style->type == 'a' || style->type == 'A' ? 13 : 6)
+                                             : (unsigned char)style->precision),
+        .flag = {.keep_decimal_point = 0U, .upper_case = 0U, .type = NVA_FP_TO_STR_TYPE_G}};
+
+    if (style->type == '\0') {
+        style->type = 'g';
+    }
+
+    switch (style->type) {
+    case 'a':
+    case 'A':
+        num_to_string_attr.base = 16;
+        num_to_string_attr.flag.type = NVA_FP_TO_STR_TYPE_A;
+        break;
+
+    case 'g':
+    case 'G':
+        break;
+
+    case 'e':
+    case 'E':
+        num_to_string_attr.flag.type = NVA_FP_TO_STR_TYPE_E;
+        break;
+
+    case 'f':
+    case 'F':
+        num_to_string_attr.flag.type = NVA_FP_TO_STR_TYPE_F;
+        break;
+
+    default:
+        break;
+    }
+
+    if (style->type >= 'A' && style->type <= 'Z') {
+        num_to_string_attr.flag.upper_case = NVA_TRUE;
+    }
+
+    switch (style->flag.sign) {
+    case NVA_FMT_FLG_SIGN_EXPLICITLY_POSITIVE:
+#if (NVA__DETECT_INF_AND_NAN)
+        if (!signbit(NVA_STACK_GET_FLOATPOINT(*data_info))) {
+            dest[i++] = '+';
+        }
+#else
+        if (NVA_STACK_GET_FLOATPOINT(*data_info) >= 0) {
+            dest[i++] = '+';
+        }
+#endif
+        break;
+
+    case NVA_FMT_FLG_SIGN_SPACE_POSITIVE:
+#if (NVA__DETECT_INF_AND_NAN)
+        if (!signbit(NVA_STACK_GET_FLOATPOINT(*data_info))) {
+            dest[i++] = ' ';
+        }
+#else
+        if (NVA_STACK_GET_FLOATPOINT(*data_info) >= 0) {
+            dest[i++] = ' ';
+        }
+#endif
+        break;
+
+    case NVA_FMT_FLG_SIGN_NEGATIVE_ONLY:
+    default:
+        break;
+    }
+
+    if (style->flag.prefix) {
+        num_to_string_attr.flag.keep_decimal_point = 1U;
+
+        switch (style->type) {
+        case 'a':
+            nva_strcat(dest + i, "0x");
+            goto end_of_style_check;
+        case 'A':
+            nva_strcat(dest + i, "0X");
+            goto end_of_style_check;
+
+        end_of_style_check:
+            i += 2;
+            break;
+
+        default:
+            break;
+        }
+    }
+
+    switch (style->type) {
+    case 'f':
+    case 'F':
+        width_of_num = nva_fptoa(NVA_STACK_GET_FLOATPOINT(*data_info), dest + i, &num_to_string_attr);
+        break;
+
+    default:
+        width_of_num = 0U;
+        break;
+    }
+
+    if (style->flag.align == NVA_FMT_FLG_ALIGN_DEFAULT) {
+        if (style->flag.zero) {
+            if ((signed)(width_of_num + i) < style->width) {
+                nva_processZeroPrefix(dest + i, style->width - (signed)(width_of_num + i), width_of_num);
+
+                return style->width;
+            }
+
+            return width_of_num + i;
+        }
+
+        style->flag.align = NVA_FMT_FLG_ALIGN_RIGHT;
+    }
+
+    return nva_processAlign(dest, style, width_of_num + i);
+}
+
 static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char* const NVA_RESTRICT format)
 {
     NVA_SIZE_T i; /* for dest */
@@ -704,6 +865,7 @@ static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char
 
                 case NVA_TYPEID_FLOAT:
                 case NVA_TYPEID_DOUBLE:
+                    i += nva_processFloatPoint(dest + i, &style, &current_phase_data_info);
                     break;
 
                 case NVA_TYPEID_PTR:
@@ -783,27 +945,29 @@ static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char
                 }
 
                 /* phase sign */
-                switch (format[j]) {
-                case ' ':
-                    style.flag.sign = NVA_FMT_FLG_SIGN_SPACE_POSITIVE;
-                    goto phase_sign_end;
+                if (format[j + 1] != '<' && format[j + 1] != '>' && format[j + 1] != '^') {
+                    switch (format[j]) {
+                    case ' ':
+                        style.flag.sign = NVA_FMT_FLG_SIGN_SPACE_POSITIVE;
+                        goto phase_sign_end;
 
-                case '+':
-                    style.flag.sign = NVA_FMT_FLG_SIGN_EXPLICITLY_POSITIVE;
-                    goto phase_sign_end;
+                    case '+':
+                        style.flag.sign = NVA_FMT_FLG_SIGN_EXPLICITLY_POSITIVE;
+                        goto phase_sign_end;
 
-                case '-':
-                    style.flag.sign = NVA_FMT_FLG_SIGN_NEGATIVE_ONLY;
-                    goto phase_sign_end;
+                    case '-':
+                        style.flag.sign = NVA_FMT_FLG_SIGN_NEGATIVE_ONLY;
+                        goto phase_sign_end;
 
-                phase_sign_end:
-                    ++j;
-                    have_phased = NVA_TRUE;
+                    phase_sign_end:
+                        ++j;
+                        have_phased = NVA_TRUE;
 
-                    break;
+                        break;
 
-                default:
-                    break;
+                    default:
+                        break;
+                    }
                 }
 
                 /* phase use prefix or not */

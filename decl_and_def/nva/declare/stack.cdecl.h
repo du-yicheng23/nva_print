@@ -118,6 +118,9 @@ typedef union nva_StackData {
 
     char char_v;
     const char* str_v;
+
+    float float_v;
+    double double_v;
 } nva_StackData;
 
 /**
@@ -149,6 +152,15 @@ typedef struct nva_StackDataInfo {
     : (((nva_TypeId)((data_info).type_id)) == NVA_TYPEID_UCHAR ? (((data_info).stack_data)->uchar_v)   \
     : (((nva_TypeId)((data_info).type_id)) == NVA_TYPEID_USHORT ? (((data_info).stack_data)->ushort_v) \
     : 0)))
+
+/**
+ * 根据类型ID获得栈的浮点数类型数据
+ * @param data_info 栈数据的信息（取结构体 nva_StackDataInfo 的变量）
+ */
+#define NVA_STACK_GET_FLOATPOINT(data_info)                                                              \
+      (((nva_TypeId)((data_info).type_id)) == NVA_TYPEID_FLOAT ? (((data_info).stack_data)->float_v)     \
+    : (((nva_TypeId)((data_info).type_id)) == NVA_TYPEID_DOUBLE ? (((data_info).stack_data)->double_v)   \
+    : 0.0f))
 
 /* clang-format on */
 
