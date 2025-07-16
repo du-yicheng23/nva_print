@@ -182,6 +182,8 @@ static NVA__DECL_UINT_TO_STR(nva__ulong_type);
 static NVA__DECL_UINT_TO_STR(nva__ullong_type);
 static NVA__DECL_UINT_TO_STR(nva__size_type);
 
+static void nva__roundoff(char* NVA_RESTRICT dest, char roundoff_value);
+
 #if (!(NVA__USE_STD_STRING && NVA_INLINE_MODE))
 
 /**
@@ -521,6 +523,35 @@ char* nva_sizetoa(const NVA_SIZE_T uvalue,
 }
 
 /**
+ * 舍入
+ * @param dest 承接的字符串（逆序的数）
+ * @param roundoff_value 舍入的判据数字
+ */
+static void nva__roundoff(char* const NVA_RESTRICT dest, const char roundoff_value)
+{
+    if (dest[0] == '-') {
+        if (roundoff_value > 5) {
+            dest[1] += 1;
+        }
+        else if (roundoff_value == 5) {
+            if ((dest[1] - '0') % 2U != 0U) {
+                dest[1] += 1;
+            }
+        }
+    }
+    else {
+        if (roundoff_value > 5) {
+            dest[0] += 1;
+        }
+        else if (roundoff_value == 5) {
+            if ((dest[0] - '0') % 2U != 0U) {
+                dest[0] += 1;
+            }
+        }
+    }
+}
+
+/**
  * 浮点数转字符串
  * @note 这个函数会将浮点数转换为字符串，保留小数点后 attr->precision 位数字。
  * 根据 attr->flag.type 的不同，转换的方式也会有所不同：
@@ -596,9 +627,20 @@ unsigned int nva_fptoa(double value,
 
     value -= (double)integer;
 
-    /* 要多乘以一次10，因为要根据保留的下一位决定是舍入 */
-    for (j = 0U; j <= attr->precision; ++j) {
-        value *= 10.0;
+    if (attr->flag.type == NVA_FP_TO_STR_TYPE_G) {
+        for (j = 0U; j <= attr->precision; ++j) {
+            value *= 10.0;
+
+            if (((NVA_SIZE_T)value) % 10U == 0U) {
+                break;
+            }
+        }
+    }
+    else {
+        /* 要多乘以一次10，因为要根据保留的下一位决定是舍入 */
+        for (j = 0U; j <= attr->precision; ++j) {
+            value *= 10.0;
+        }
     }
 
     decimal = (NVA_SIZE_T)value; /* 取小数部分 */
@@ -620,47 +662,25 @@ unsigned int nva_fptoa(double value,
                 decimal /= 10U;
             } while (decimal != 0U);
 
-            if (dest[0] != '-') {
-                for (; i < attr->precision; ++i) {
-                    dest[i] = '0';
+            if (attr->flag.type != NVA_FP_TO_STR_TYPE_G) {
+                if (dest[0] != '-') {
+                    for (; i < attr->precision; ++i) {
+                        dest[i] = '0';
+                    }
                 }
-            }
-            else {
-                for (; i - 1 < attr->precision; ++i) {
-                    dest[i] = '0';
+                else {
+                    for (; i - 1 < attr->precision; ++i) {
+                        dest[i] = '0';
+                    }
                 }
             }
 
             dest[i++] = '.';
-
-            /* 舍入 */
-            if (dest[0] == '-') {
-                if (roundoff_value > 5) {
-                    dest[1] += 1;
-                }
-                else if (roundoff_value == 5) {
-                    if ((dest[1] - '0') % 2U != 0U) {
-                        dest[1] += 1;
-                    }
-                }
-            }
-            else {
-                if (roundoff_value > 5) {
-                    dest[0] += 1;
-                }
-                else if (roundoff_value == 5) {
-                    if ((dest[0] - '0') % 2U != 0U) {
-                        dest[0] += 1;
-                    }
-                }
-            }
         }
+        nva__roundoff(dest, roundoff_value);
     }
     else {
         is_decimal_zero = NVA_TRUE;
-        if (attr->flag.keep_decimal_point) {
-            dest[i++] = '.';
-        }
     }
 
     do {
@@ -669,27 +689,7 @@ unsigned int nva_fptoa(double value,
     } while (integer != 0U);
 
     if (is_decimal_zero) {
-        /* 舍入 */
-        if (dest[0] == '-') {
-            if (roundoff_value > 5) {
-                dest[1] += 1;
-            }
-            else if (roundoff_value == 5) {
-                if ((dest[1] - '0') % 2U != 0U) {
-                    dest[1] += 1;
-                }
-            }
-        }
-        else {
-            if (roundoff_value > 5) {
-                dest[0] += 1;
-            }
-            else if (roundoff_value == 5) {
-                if ((dest[0] - '0') % 2U != 0U) {
-                    dest[0] += 1;
-                }
-            }
-        }
+        nva__roundoff(dest, roundoff_value);
     }
 
     dest[i] = '\0';
@@ -707,6 +707,11 @@ unsigned int nva_fptoa(double value,
         roundoff_value = dest[j];        /* 由于 roundoff_value 不再需要使用，因此把它当作临时变量 */
         dest[j] = dest[i - 1 + k - j];
         dest[i - 1 + k - j] = roundoff_value;
+    }
+
+    if (is_decimal_zero && attr->flag.keep_decimal_point) {
+        dest[i++] = '.';
+        dest[i] = '\0';
     }
 
     return i;
