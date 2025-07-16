@@ -589,6 +589,8 @@ unsigned int nva_fptoa(double value,
             dest[i++] = 'f';
         }
 
+        dest[i] = '\0';
+
         return i;
     }
     else if (isnan(value)) {
@@ -606,6 +608,8 @@ unsigned int nva_fptoa(double value,
             dest[i++] = 'a';
             dest[i++] = 'n';
         }
+
+        dest[i] = '\0';
 
         return i;
     }
