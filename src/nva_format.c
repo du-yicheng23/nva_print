@@ -62,7 +62,7 @@ static unsigned int nva_processFloatPoint(char* NVA_RESTRICT dest,
 
 nva_FmtStatus nva_schar(const signed char value, const nva_FmtStatus status)
 {
-    if (status.status != NVA_START.status) {
+    if (status != NVA_START) {
         return NVA_ERROR;
     }
 
@@ -75,7 +75,7 @@ nva_FmtStatus nva_schar(const signed char value, const nva_FmtStatus status)
 
 nva_FmtStatus nva_uchar(const unsigned char uvalue, const nva_FmtStatus status)
 {
-    if (status.status != NVA_START.status) {
+    if (status != NVA_START) {
         return NVA_ERROR;
     }
 
@@ -88,7 +88,7 @@ nva_FmtStatus nva_uchar(const unsigned char uvalue, const nva_FmtStatus status)
 
 nva_FmtStatus nva_short(const signed short value, const nva_FmtStatus status)
 {
-    if (status.status != NVA_START.status) {
+    if (status != NVA_START) {
         return NVA_ERROR;
     }
 
@@ -101,7 +101,7 @@ nva_FmtStatus nva_short(const signed short value, const nva_FmtStatus status)
 
 nva_FmtStatus nva_ushort(const unsigned short uvalue, const nva_FmtStatus status)
 {
-    if (status.status != NVA_START.status) {
+    if (status != NVA_START) {
         return NVA_ERROR;
     }
 
@@ -114,7 +114,7 @@ nva_FmtStatus nva_ushort(const unsigned short uvalue, const nva_FmtStatus status
 
 nva_FmtStatus nva_int(const int value, const nva_FmtStatus status)
 {
-    if (status.status != NVA_START.status) {
+    if (status != NVA_START) {
         return NVA_ERROR;
     }
 
@@ -127,7 +127,7 @@ nva_FmtStatus nva_int(const int value, const nva_FmtStatus status)
 
 nva_FmtStatus nva_uint(const unsigned int uvalue, const nva_FmtStatus status)
 {
-    if (status.status != NVA_START.status) {
+    if (status != NVA_START) {
         return NVA_ERROR;
     }
 
@@ -140,7 +140,7 @@ nva_FmtStatus nva_uint(const unsigned int uvalue, const nva_FmtStatus status)
 
 nva_FmtStatus nva_long(const long value, const nva_FmtStatus status)
 {
-    if (status.status != NVA_START.status) {
+    if (status != NVA_START) {
         return NVA_ERROR;
     }
 
@@ -153,7 +153,7 @@ nva_FmtStatus nva_long(const long value, const nva_FmtStatus status)
 
 nva_FmtStatus nva_ulong(const unsigned long uvalue, const nva_FmtStatus status)
 {
-    if (status.status != NVA_START.status) {
+    if (status != NVA_START) {
         return NVA_ERROR;
     }
 
@@ -166,7 +166,7 @@ nva_FmtStatus nva_ulong(const unsigned long uvalue, const nva_FmtStatus status)
 
 nva_FmtStatus nva_llong(const NVA_LONG_LONG value, const nva_FmtStatus status)
 {
-    if (status.status != NVA_START.status) {
+    if (status != NVA_START) {
         return NVA_ERROR;
     }
 
@@ -179,7 +179,7 @@ nva_FmtStatus nva_llong(const NVA_LONG_LONG value, const nva_FmtStatus status)
 
 nva_FmtStatus nva_ullong(const unsigned NVA_LONG_LONG uvalue, const nva_FmtStatus status)
 {
-    if (status.status != NVA_START.status) {
+    if (status != NVA_START) {
         return NVA_ERROR;
     }
 
@@ -192,7 +192,7 @@ nva_FmtStatus nva_ullong(const unsigned NVA_LONG_LONG uvalue, const nva_FmtStatu
 
 nva_FmtStatus nva_ptr(const void* ptr, const nva_FmtStatus status)
 {
-    if (status.status != NVA_START.status) {
+    if (status != NVA_START) {
         return NVA_ERROR;
     }
 
@@ -205,7 +205,7 @@ nva_FmtStatus nva_ptr(const void* ptr, const nva_FmtStatus status)
 
 nva_FmtStatus nva_char(const char ch, const nva_FmtStatus status)
 {
-    if (status.status != NVA_START.status) {
+    if (status != NVA_START) {
         return NVA_ERROR;
     }
 
@@ -218,7 +218,7 @@ nva_FmtStatus nva_char(const char ch, const nva_FmtStatus status)
 
 nva_FmtStatus nva_str(const char* const str, const nva_FmtStatus status)
 {
-    if (status.status != NVA_START.status) {
+    if (status != NVA_START) {
         return NVA_ERROR;
     }
 
@@ -231,7 +231,7 @@ nva_FmtStatus nva_str(const char* const str, const nva_FmtStatus status)
 
 nva_FmtStatus nva_float(const float value, const nva_FmtStatus status)
 {
-    if (status.status != NVA_START.status) {
+    if (status != NVA_START) {
         return NVA_ERROR;
     }
 
@@ -244,7 +244,7 @@ nva_FmtStatus nva_float(const float value, const nva_FmtStatus status)
 
 nva_FmtStatus nva_double(const double value, const nva_FmtStatus status)
 {
-    if (status.status != NVA_START.status) {
+    if (status != NVA_START) {
         return NVA_ERROR;
     }
 
@@ -274,7 +274,7 @@ nva_ErrorCode nva_format(char* NVA_RESTRICT dest, const char* NVA_RESTRICT forma
         return NVA_PARAM_ERROR;
     }
 
-    if (status.status != NVA_START.status) {
+    if (status != NVA_START) {
         return NVA_FAIL;
     }
 
@@ -385,7 +385,7 @@ static unsigned int nva_processInteger(char* const NVA_RESTRICT dest,
 {
     unsigned char i = 0U;
     unsigned int width_of_num;
-    nva_NumToStringAttr num_to_string_attr = {.base = 10, .upper_case = NVA_FALSE};
+    nva_NumToStringAttr num_to_string_attr = {10, NVA_FALSE};
 
     if (style->type == '\0') {
         style->type = 'd';
@@ -569,7 +569,7 @@ static unsigned int nva_processPtr(char* const NVA_RESTRICT dest,
 {
     unsigned char i = 0U;
     unsigned int width_of_num;
-    nva_NumToStringAttr num_to_string_attr = {.base = 16, .upper_case = NVA_FALSE};
+    nva_NumToStringAttr num_to_string_attr = {16, NVA_FALSE};
 
     if (style->type == '\0') {
         style->type = 'x';
@@ -658,11 +658,16 @@ static unsigned int nva_processFloatPoint(char* const NVA_RESTRICT dest,
 {
     unsigned char i = 0U;
     unsigned int width_of_num;
-    nva_FloatPointToStrAttr num_to_string_attr = {
-        .base = 10,
-        .precision = (style->precision == -1 ? (style->type == 'a' || style->type == 'A' ? 13 : 6)
-                                             : (unsigned char)style->precision),
-        .flag = {.keep_decimal_point = 0U, .upper_case = 0U, .type = NVA_FP_TO_STR_TYPE_G}};
+    nva_FloatPointToStrAttr num_to_string_attr = {10, 6, {0U, 0U, NVA_FP_TO_STR_TYPE_G}};
+
+    if (style->precision == -1) {
+        if (style->type == 'a' || style->type == 'A') {
+            num_to_string_attr.precision = 13;
+        }
+    }
+    else {
+        num_to_string_attr.precision = (unsigned char)style->precision;
+    }
 
     if (style->type == '\0') {
         style->type = 'g';
@@ -787,7 +792,7 @@ static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char
 
     unsigned int phasing_num_width;
 
-    nva_FormatStyle style = {0};
+    nva_FormatStyle style;
 
     nva_TypeId type_id;
 
@@ -819,16 +824,16 @@ static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char
             in_formatting = NVA_TRUE;
             ++j;
 
-            style = (nva_FormatStyle){.arg_id = -1,
-                                      .filler = ' ',
-                                      .width = -1,
-                                      .precision = -1,
-                                      .type = '\0',
-                                      .flag = {.align = NVA_FMT_FLG_ALIGN_DEFAULT,
-                                               .sign = NVA_FMT_FLG_SIGN_NEGATIVE_ONLY,
-                                               .prefix = 0U,
-                                               .zero = 0U,
-                                               .L = 0U}};
+            style.arg_id = -1;
+            style.filler = ' ';
+            style.width = -1;
+            style.precision = -1;
+            style.type = '\0';
+            style.flag.align = NVA_FMT_FLG_ALIGN_DEFAULT;
+            style.flag.sign = NVA_FMT_FLG_SIGN_NEGATIVE_ONLY;
+            style.flag.prefix = 0U;
+            style.flag.zero = 0U;
+            style.flag.L = 0;
         }
 
         if (in_formatting) {
@@ -847,7 +852,8 @@ static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char
                     return error_code;
                 }
 
-                current_phase_data_info = (nva_StackDataInfo){.stack_data = &current_phase_value, .type_id = type_id};
+                current_phase_data_info.stack_data = &current_phase_value;
+                current_phase_data_info.type_id = type_id;
 
                 switch (type_id) {
                 case NVA_TYPEID_SCHAR:

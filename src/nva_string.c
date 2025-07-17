@@ -401,15 +401,6 @@ int nva_atoi(const char* const NVA_RESTRICT str, unsigned int* const width_of_nu
     return value;
 }
 
-static NVA__DEF_INT_TO_STR(int, nva__uint_type);
-static NVA__DEF_INT_TO_STR(long, nva__ulong_type);
-static NVA__DEF_INT_TO_STR(nva__llong_type, nva__ullong_type);
-
-static NVA__DEF_UINT_TO_STR(nva__uint_type);
-static NVA__DEF_UINT_TO_STR(nva__ulong_type);
-static NVA__DEF_UINT_TO_STR(nva__ullong_type);
-static NVA__DEF_UINT_TO_STR(nva__size_type);
-
 /**
  * 整型转字符串
  * @param value 整型数值
@@ -720,3 +711,16 @@ unsigned int nva_fptoa(double value,
 
     return i;
 }
+
+/* clang-format off */
+
+static NVA__DEF_INT_TO_STR(int, nva__uint_type)
+static NVA__DEF_INT_TO_STR(long, nva__ulong_type)
+static NVA__DEF_INT_TO_STR(nva__llong_type, nva__ullong_type)
+
+static NVA__DEF_UINT_TO_STR(nva__uint_type)
+static NVA__DEF_UINT_TO_STR(nva__ulong_type)
+static NVA__DEF_UINT_TO_STR(nva__ullong_type)
+static NVA__DEF_UINT_TO_STR(nva__size_type)
+
+    /* clang-format on */

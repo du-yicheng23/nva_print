@@ -14,15 +14,13 @@
 NVA_EXTERN_C_BEGIN
 
 /**
- * 默认的格式化状态
- * @note 此处采用结构体实现了 C++ 的“强类型枚举”，可以把它当作强类型枚举使用。
+ * 格式化状态（用于传参函数）
  */
-typedef struct nva_FmtStatus {
-    signed char status;
-
-#define NVA_START ((nva_FmtStatus){-1}) /**< 开始 */
-#define NVA_ERROR ((nva_FmtStatus){-2}) /**< 错误 */
-} nva_FmtStatus;
+enum nva_FmtStatus_ {
+    NVA_START = 0, /**< 开始 */
+    NVA_ERROR = -1 /**< 错误 */
+};
+typedef signed char nva_FmtStatus;
 
 /**
  * 格式化的每一个选项。参考
