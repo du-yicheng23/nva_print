@@ -5,7 +5,6 @@
  * @brief 格式化字符串
  */
 
-#pragma once
 #ifndef NVA_FORMAT_H
 #define NVA_FORMAT_H
 

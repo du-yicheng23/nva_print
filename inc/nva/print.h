@@ -32,7 +32,7 @@ NVA_EXTERN_C_END
 
 #ifndef __cplusplus
 
-#if (__STDC_VERSION__ > 201100L)
+#if (defined(__STDC_VERSION__)) && (__STDC_VERSION__ > 201100L)
 
 #define nva_add(value, obj)                         \
     _Generic((value),                               \
@@ -45,7 +45,7 @@ NVA_EXTERN_C_END
         float: nva_float((value), (obj)),           \
         double: nva_double((value), (obj)))
 
-#endif /* (__STDC_VERSION__ > 201100L) */
+#endif /* (defined(__STDC_VERSION__)) && (__STDC_VERSION__ > 201100L) */
 
 #else  /* !__cplusplus */
 

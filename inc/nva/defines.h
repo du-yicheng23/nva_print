@@ -5,7 +5,6 @@
  * @brief 工程宏定义
  */
 
-#pragma once
 #ifndef NVA_DEFINES_H
 #define NVA_DEFINES_H
 

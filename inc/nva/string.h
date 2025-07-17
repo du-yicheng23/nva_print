@@ -5,7 +5,6 @@
  * @brief nva 字符串相关
  */
 
-#pragma once
 #ifndef NVA_STRING_H
 #define NVA_STRING_H
 

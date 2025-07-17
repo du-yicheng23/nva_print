@@ -5,7 +5,6 @@
  * @brief 栈
  */
 
-#pragma once
 #ifndef NVA_STACK_H
 #define NVA_STACK_H
 
