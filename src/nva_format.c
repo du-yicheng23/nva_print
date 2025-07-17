@@ -798,14 +798,16 @@ static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char
 
     nva_ErrorCode error_code;
 
-    NVA_BOOL in_formatting = NVA_FALSE;   /* 开始格式化其中一个{}了 */
-    NVA_BOOL recording_arg_id = NVA_TRUE; /* 在格式化过程中，正在记录 arg_id */
-    NVA_BOOL in_phasing = NVA_FALSE;      /* 在格式化过程中，已经扫描到 : 了，开始解析格式化选项 */
-    NVA_BOOL have_phased;
+    struct {
+        unsigned char in_formatting : 1U;    /* 开始格式化其中一个{}了 */
+        unsigned char recording_arg_id : 1U; /* 在格式化过程中，正在记录 arg_id */
+        unsigned char in_phasing : 1U;       /* 在格式化过程中，已经扫描到 : 了，开始解析格式化选项 */
+        unsigned char have_phased : 1U;
+    } flag = {0, 1U, 0, 0};
 
     for (i = 0U, j = 0U; format[j] != '\0';) {
         if (format[j] == '{') {
-            if (in_formatting) {
+            if (flag.in_formatting) {
                 return NVA_FORMAT_ERROR;
             }
 
@@ -821,7 +823,7 @@ static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char
                 continue;
             }
 
-            in_formatting = NVA_TRUE;
+            flag.in_formatting = 1U;
             ++j;
 
             style.arg_id = -1;
@@ -836,7 +838,7 @@ static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char
             style.flag.L = 0;
         }
 
-        if (in_formatting) {
+        if (flag.in_formatting) {
             if (format[j] == '}') {
                 /* formatting here... */
 
@@ -890,32 +892,32 @@ static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char
                     break;
                 }
 
-                in_formatting = NVA_FALSE;
-                recording_arg_id = NVA_TRUE;
-                in_phasing = NVA_FALSE;
+                flag.in_formatting = 0U;
+                flag.recording_arg_id = 1U;
+                flag.in_phasing = 0U;
                 ++stack_index;
 
                 ++j;
                 continue;
             }
 
-            if (recording_arg_id && format[j] >= '0' && format[j] <= '9') {
+            if (flag.recording_arg_id && format[j] >= '0' && format[j] <= '9') {
                 if (format[j + 1] != '}' && format[j + 1] != ':') {
                     return NVA_FORMAT_ERROR;
                 }
 
                 style.arg_id = (signed char)(format[j++] - '0');
 
-                recording_arg_id = NVA_FALSE;
+                flag.recording_arg_id = 0U;
             }
 
-            if (!in_phasing && format[j] == ':') {
-                in_phasing = NVA_TRUE;
+            if (!flag.in_phasing && format[j] == ':') {
+                flag.in_phasing = 1U;
                 ++j;
             }
 
-            if (in_phasing) {
-                have_phased = NVA_FALSE;
+            if (flag.in_phasing) {
+                flag.have_phased = 0U;
 
                 /* phase align */
                 switch (format[j]) {
@@ -942,7 +944,7 @@ static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char
                     }
 
                     ++j;
-                    have_phased = NVA_TRUE;
+                    flag.have_phased = 1U;
 
                     break;
 
@@ -967,7 +969,7 @@ static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char
 
                     phase_sign_end:
                         ++j;
-                        have_phased = NVA_TRUE;
+                        flag.have_phased = 1U;
 
                         break;
 
@@ -980,7 +982,7 @@ static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char
                 if (format[j] == '#') {
                     style.flag.prefix = 1U;
                     ++j;
-                    have_phased = NVA_TRUE;
+                    flag.have_phased = 1U;
                 }
 
                 /* phase width and "0" */
@@ -1000,7 +1002,7 @@ static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char
                         style.width = (signed char)nva_atoi(format + j, &phasing_num_width);
                         j += phasing_num_width;
                     } while (0);
-                    have_phased = NVA_TRUE;
+                    flag.have_phased = 1U;
                 }
 
                 /* phase precision */
@@ -1008,23 +1010,23 @@ static nva_ErrorCode nva_formatProcess(char* const NVA_RESTRICT dest, const char
                     ++j;
                     style.precision = (signed char)nva_atoi(format + j, &phasing_num_width);
                     j += phasing_num_width;
-                    have_phased = NVA_TRUE;
+                    flag.have_phased = 1U;
                 }
 
                 /* phase whether add number separator characters or not */
                 if (format[j] == 'L') {
                     style.flag.L = 1U;
                     ++j;
-                    have_phased = NVA_TRUE;
+                    flag.have_phased = 1U;
                 }
 
                 /* phase type */
                 if (NVA_IS_TYPE_CHAR(format[j])) {
                     style.type = format[j++];
-                    have_phased = NVA_TRUE;
+                    flag.have_phased = 1U;
                 }
 
-                if (!have_phased) {
+                if (!flag.have_phased) {
                     ++j;
                 }
             }

@@ -11,18 +11,6 @@
 #include "nva/defines.h"
 #include "nva/declare/string.cdecl.h"
 
-#ifndef NVA_NO_STRING_H
-
-#include <string.h>
-
-#define NVA__USE_STD_STRING NVA_TRUE
-
-#else /* !NVA_NO_STRING_H */
-
-#define NVA__USE_STD_STRING NVA_FALSE
-
-#endif /* !NVA_NO_STRING_H */
-
 #ifndef NVA_NO_INF_AND_NAN
 
 #include "math.h"

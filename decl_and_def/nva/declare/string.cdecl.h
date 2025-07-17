@@ -10,6 +10,18 @@
 
 #include "nva/defines.h"
 
+#ifndef NVA_NO_STRING_H
+
+#include <string.h>
+
+#define NVA__USE_STD_STRING NVA_TRUE
+
+#else /* !NVA_NO_STRING_H */
+
+#define NVA__USE_STD_STRING NVA_FALSE
+
+#endif /* !NVA_NO_STRING_H */
+
 NVA_EXTERN_C_BEGIN
 
 /**
