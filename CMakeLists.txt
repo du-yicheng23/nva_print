@@ -3,12 +3,12 @@ cmake_minimum_required(VERSION 3.27)
 project(nva_print C)
 set(PROJECT_PREFIX NVA)
 
-add_library(${PROJECT_NAME} INTERFACE)
+add_library(${PROJECT_NAME} STATIC)
 
-target_include_directories(${PROJECT_NAME} INTERFACE
+target_include_directories(${PROJECT_NAME} PUBLIC
     ./inc/
     ./decl_and_def/
 )
 
 file(GLOB_RECURSE ${PROJECT_PREFIX}_SOURCES "./src/*.c")
-target_sources(${PROJECT_NAME} INTERFACE ${${PROJECT_PREFIX}_SOURCES})
+target_sources(${PROJECT_NAME} PRIVATE ${${PROJECT_PREFIX}_SOURCES})
